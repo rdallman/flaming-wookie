@@ -14,6 +14,20 @@ import (
 var templates = template.Must(template.ParseGlob("templates/*.html"))
 var db *sql.DB
 
+type Quiz struct {
+	Questions []Question
+}
+
+type Question struct {
+	Text    string
+	Answers []Answer
+}
+
+type Answer struct {
+	Text    string
+	Correct bool
+}
+
 func init() {
 	var err error
 	db, err = sql.Open("postgres", "dbname=wookie")
