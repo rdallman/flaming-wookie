@@ -30,7 +30,7 @@ type Answer struct {
 
 func init() {
 	var err error
-	db, err = sql.Open("postgres", "dbname=wookie")
+	db, err = sql.Open("postgres", "postgres://wookie:password@absker.com/wookie?sslmode=disable")
 	if err != nil {
 		panic(err)
 	}
@@ -64,6 +64,21 @@ func login(w http.ResponseWriter, r *http.Request) {
 	email, pass := r.FormValue("email"), r.FormValue("password")
 	fmt.Fprintf(w, "<html><body><h1>Hello, %s %s!</h1></body></html>", email, pass)
 	//TODO check for authenticiousnessity
+	
+	
+	var userid int
+	var pw string
+	err := db.QueryRow("SELECT user_id, password FROM \"Users\" WHERE username=$1", email).Scan(&userid, &pw)
+    switch {
+    case err == sql.ErrNoRows:
+            fmt.Fprintf(w, "No user with that ID.")
+    case err != nil:
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+    default:
+            fmt.Fprintf(w, "user_id is %b \n\n password is %s", userid, pw)
+    }
+    
+    
 	//TODO return site wide cookie & add to DB
 }
 
