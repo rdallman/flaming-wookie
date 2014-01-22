@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -172,14 +173,11 @@ func login(w http.ResponseWriter, r *http.Request) {
 	phash := string(hash[:]) //finicky
 
 	switch {
-	case err == sql.ErrNoRows:
-		// TODO add flash messages
-		fmt.Fprintf(w, "No user with that email.")
 	case err != nil:
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-	case dbpw != phash:
+	case err == sql.ErrNoRows || dbpw != phash:
 		// TODO add flash messages
-		fmt.Fprintf(w, "Incorrect password")
+		fmt.Fprintf(w, "Invalid login credentials")
 	default:
 		expire := time.Now().AddDate(0, 1, 0)
 		cookie := &http.Cookie{
@@ -189,10 +187,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 			Path:    "/",
 		}
 		http.SetCookie(w, cookie)
-		//TODO this is weird
+		//TODO this is weird (flash)
 		http.Redirect(w, r, "/", 307)
 	}
-	// TODO return site wide cookie & add to DB
+	//TODO add cookie to db
 }
 
 func register(w http.ResponseWriter, r *http.Request) {
@@ -211,6 +209,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+	//FIXME redirect to login
 }
 
 // checks for cookie; if no cookie then redirect to home page
@@ -223,6 +222,8 @@ func register(w http.ResponseWriter, r *http.Request) {
 // then with that knowledge, get teacher specific data from database (in other methods...).
 // going off of that, I guess you really just need to return an ID each time since that'll be
 // what's used to hit the DB. That may prove problematic but premature optimization is the root of all... well, you know
+//
+// TODO help Naven Johnson find his special purpose
 func auth(w http.ResponseWriter, r *http.Request) error {
 	_, err := r.Cookie("logged-in")
 	if err != nil {
@@ -233,9 +234,39 @@ func auth(w http.ResponseWriter, r *http.Request) error {
 	}
 }
 
+// add more later
+func handleQuizGet(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	qID, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		//fmt.Printf("%d", qID) //testing
+		rows, err := db.Query(`SELECT * FROM quiz WHERE qid=$1`, qID)
+		if err != nil {
+			fmt.Printf("%s", err)
+		} else {
+			for rows.Next() {
+				//fmt.Printf("here") //testing
+				var qid int
+				var title string
+				var info string
+				var cid int
+				err = rows.Scan(&qid, &title, &info, &cid)
+				if err != nil {
+					fmt.Printf("%s", err)
+				} else {
+					fmt.Printf("\nqid:%d \ttitle:%s \tinfo:%s \tcid:%d", qid, title, info, cid)
+				}
+			}
+		}
+	}
+}
+
 func main() {
 	r := mux.NewRouter()
-	r.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
+	// r.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
 	r.HandleFunc("/", handlePage("index"))
 	r.HandleFunc("/login", handlePage("login")).Methods("GET")
 	r.HandleFunc("/logmein", login).Methods("POST")
@@ -244,11 +275,13 @@ func main() {
 	r.HandleFunc("/dashboard", handlePage("dashboard")).Methods("GET")
 	r.HandleFunc("/quiz", handlePage("quiz")).Methods("GET")
 
-	// TODO these are just ideas
-	// r.HandleFunc("/quiz/{id}", handleQuizGet).Methods("GET")
-	// r.HandleFunc("/quiz/{id}", handleAnswer).Methods("PUT")
-	// r.HandleFunc("/quiz/{id}/edit, handleQuizEdit).Methods("POST, GET")
-	// r.HandleFunc("/quiz/add, handleQuizCreate).Methods("POST")
+	//TODO these are just ideas
+	r.HandleFunc("/quiz/{id}", handleQuizGet).Methods("GET")
+	//r.HandleFunc("/quiz/{id}", handleAnswer).Methods("PUT")
+	//r.HandleFunc("/quiz/{id}/edit", handleQuizEdit).Methods("POST, GET")
+	//r.HandleFunc("/quiz/add, handleQuizCreate).Methods("POST")
+
+	r.HandleFunc("/quiz/add", handleQuizCreate).Methods("POST")
 
 	http.Handle("/", r)
 	http.ListenAndServe(":8080", nil)
