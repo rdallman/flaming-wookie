@@ -32,50 +32,86 @@ type Answer struct {
 func init() {
 	var err error
 	db, err = sql.Open("postgres", "postgres://wookie:password@absker.com/wookie?sslmode=disable")
+	//db, err = sql.Open("postgres", "user=reed dbname=wookie sslmode=disable")
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
-	//TODO NEED TO USE BYTEA TO STORE HASHES
-	//_, err = db.Exec(`ALTER TABLE "Users" ALTER COLUMN password TYPE bytea`)
-	//fmt.Println(err)
-	//_, err = db.Exec(`ALTER TABLE "Users" ALTER COLUMN salt TYPE bytea`)
-	//fmt.Println(err)
-	// TODO drop tables
+
+	//////////////////////////////////////
+	// drop tables
 	// DANGER this will empty the db
-	// I'm going to do this just to change the names because it's a pain in the ass
-	// and nice for testing (and reading types and such, to boot)
-
-	//_, err = db.Exec(`DROP TABLE "Classes" "Users" "Students"`)
+	//
+	//////////////////////////////////////
+	//
+	//_, err = db.Exec(`DROP TABLE "Classes", "Users", "Students" CASCADE`)
+	//fmt.Println(err)
+	//_, err = db.Exec(`DROP TABLE classes, users, students, quiz CASCADE`)
 	//fmt.Println(err)
 
+	//for getting table names -- handy
+	//
 	//rows, err := db.Query("SELECT tablename from pg_catalog.pg_tables")
 	//for rows.Next() {
 	//var tablename string
 	//rows.Scan(&tablename)
 	//fmt.Println(tablename)
 	//}
-	//_, err = db.Exec(`CREATE TABLE teachers
-	//(tid integer,
-	//email text,
-	//password text,
-	//salt text)`)
 
-	//_, err = db.Exec(`CREATE TABLE classes
-	//(cid integer,
+	/////////////////////////////////////////////
+	//creating
+	//TODO NOT NULL all of these later...
+	/////////////////////////////////////////////
+
+	//_, err = db.Exec(`CREATE TABLE users (
+	//uid serial PRIMARY KEY,
+	//email text,
+	//password bytea,
+	//salt bytea
+	//)`)
+	//fmt.Println(err)
+
+	//_, err = db.Exec(`CREATE TABLE classes (
+	//cid serial PRIMARY KEY,
 	//name text,
-	//active boolean,
-	//uid text)`) //TODO not sure about this one?
+	//uid integer REFERENCES users (uid)
+	//)`)
+	//fmt.Println(err)
 
 	////TODO this just feels wrong
-	//_, err = db.Exec(`CREATE TABLE students
-	//(sid text,
-	//pin integer,
-	//cid integer)`)
+	//_, err = db.Exec(`CREATE TABLE students (
+	//sid serial PRIMARY KEY,
+	//schoolid text,
+	//pin integer
+	//)`)
+	//fmt.Println(err)
 
-	//_, err = db.Exec(`CREATE TABLE quiz
-	//(qid integer,
-	//name text,
-	//info json)`)
+	//_, err = db.Exec(`CREATE TABLE quiz (
+	//qid serial PRIMARY KEY,
+	//title text,
+	//info json,
+	//cid integer REFERENCES classes (cid)
+	//)`)
+	//fmt.Println(err)
+
+	////for authentication of students
+	//_, err = db.Exec(`CREATE TABLE class_student (
+	//cid integer REFERENCES classes (cid),
+	//sid integer REFERENCES students (sid)
+	//)`)
+	//fmt.Println(err)
+
+	////////////////////////////////
+	//TODO FIXME STAHP OTHER KEYWORDS
+	//WIP
+	///////////////////////////////
+
+	//TODO some thought needed... this would be a shitton of rows
+	//_, err = db.Exec(`CREATE TABLE quiz_student_question_answer (
+	//qid integer REFERENCES quiz (qid),
+	//sid integer REFERENCES student (sid),
+	//number integer,
+	//answer text
+	//)`)
 
 	//TODO solution for grading
 }
@@ -97,11 +133,10 @@ func handlePage(name string) func(http.ResponseWriter, *http.Request) {
 func login(w http.ResponseWriter, r *http.Request) {
 	//r.ParseForm()
 	inputEmail, inputPass := r.FormValue("email"), r.FormValue("password")
-	fmt.Fprintf(w, inputPass, inputEmail)
 
 	//dbpw is the salted sha256 hash we stored as password
 	var salt, dbpw string
-	err := db.QueryRow(`SELECT salt, password FROM "Users" WHERE username=$1`, inputEmail).Scan(&salt, &dbpw)
+	err := db.QueryRow(`SELECT salt, password FROM users WHERE email=$1`, inputEmail).Scan(&salt, &dbpw)
 
 	//salt input password, hash and compare to database salted hash
 	hash := sha256.Sum256(append([]byte(inputPass), salt...))
@@ -110,7 +145,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case err == sql.ErrNoRows:
 		// TODO add flash messages
-		fmt.Fprintf(w, "No user with that username.")
+		fmt.Fprintf(w, "No user with that email.")
 	case err != nil:
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	case dbpw != phash:
@@ -125,6 +160,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 			Path:    "/",
 		}
 		http.SetCookie(w, cookie)
+		//TODO this is weird
 		http.Redirect(w, r, "/", 307)
 	}
 	// TODO return site wide cookie & add to DB
@@ -142,12 +178,11 @@ func register(w http.ResponseWriter, r *http.Request) {
 	phash := string(hash[:])
 
 	// TODO check existence?
-	_, err = db.Exec(`INSERT INTO "Users" (username, password, salt)
+	_, err = db.Exec(`INSERT INTO users (email, password, salt)
     VALUES($1, $2, $3)`, email, phash, salt)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	http.Redirect(w, r, "/login", 307)
 }
 
 // checks for cookie; if no cookie then redirect to home page
@@ -173,7 +208,7 @@ func auth(w http.ResponseWriter, r *http.Request) error {
 
 func main() {
 	r := mux.NewRouter()
-	r.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("/static/"))))
+	r.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
 	r.HandleFunc("/", handlePage("index"))
 	r.HandleFunc("/login", handlePage("login")).Methods("GET")
 	r.HandleFunc("/logmein", login).Methods("POST")
