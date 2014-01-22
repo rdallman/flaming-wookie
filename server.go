@@ -45,7 +45,7 @@ func init() {
 	//
 	//_, err = db.Exec(`DROP TABLE "Classes", "Users", "Students" CASCADE`)
 	//fmt.Println(err)
-	//_, err = db.Exec(`DROP TABLE classes, users, students, quiz CASCADE`)
+	//_, err = db.Exec(`DROP TABLE classes, users, students, quiz, class_student CASCADE`)
 	//fmt.Println(err)
 
 	//for getting table names -- handy
@@ -64,7 +64,7 @@ func init() {
 
 	//_, err = db.Exec(`CREATE TABLE users (
 	//uid serial PRIMARY KEY,
-	//email text,
+	//email text UNIQUE,
 	//password bytea,
 	//salt bytea
 	//)`)
