@@ -1,0 +1,26 @@
+<html ng-app="quizApp">
+<head>
+<title>Dashboard</title>
+  <script src="//code.jquery.com/jquery.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="http://fonts.googleapis.com/css?family=Oswald:300,400,700" rel="stylesheet" />
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet" />
+  <link href="/static/styles.css" rel="stylesheet" media="screen">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular.min.js"></script>
+  
+</head>
+<body>
+<div class="container" ng-controller="QuizController">
+    <h1>Quiz</h1>
+    <ul id="questions">
+        <li ng-repeat="question in questions">
+            <p>{{question}}</p>
+        </li>
+    </ul>
+    <input type="text" ng-model="newQuestion" placeholder="enter a question">
+    <button ng:click="addQuestion(newQuestion)">Add Question</button><br/>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
