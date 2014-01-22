@@ -13,7 +13,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var templates = template.Must(template.ParseGlob("templates/*.html"))
+var templates = template.Must(template.New("").Delims("<<<", ">>>").ParseGlob("templates/*.html"))
 var db *sql.DB
 
 type Quiz struct {
@@ -241,6 +241,8 @@ func main() {
 	r.HandleFunc("/logmein", login).Methods("POST")
 	r.HandleFunc("/register", handlePage("register")).Methods("GET")
 	r.HandleFunc("/register", register).Methods("POST")
+	r.HandleFunc("/dashboard", handlePage("dashboard")).Methods("GET")
+	r.HandleFunc("/quiz", handlePage("quiz")).Methods("GET")
 
 	// TODO these are just ideas
 	// r.HandleFunc("/quiz/{id}", handleQuizGet).Methods("GET")
