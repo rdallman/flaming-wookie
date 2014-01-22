@@ -5,11 +5,12 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"fmt"
-	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
 	"html/template"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
 )
 
 var templates = template.Must(template.ParseGlob("templates/*.html"))
@@ -45,7 +46,7 @@ func init() {
 	//
 	//_, err = db.Exec(`DROP TABLE "Classes", "Users", "Students" CASCADE`)
 	//fmt.Println(err)
-	//_, err = db.Exec(`DROP TABLE classes, users, students, quiz, class_student CASCADE`)
+	//_, err = db.Exec(`DROP TABLE classes, users, students, quiz CASCADE`)
 	//fmt.Println(err)
 
 	//for getting table names -- handy
@@ -84,6 +85,34 @@ func init() {
 	//pin integer
 	//)`)
 	//fmt.Println(err)
+
+	//_, err = db.Exec(`CREATE TABLE quiz (
+	//qid serial PRIMARY KEY,
+	//title text,
+	//info json,
+	//cid integer REFERENCES classes (cid)
+	//)`)
+	//fmt.Println(err)
+
+	////for authentication of students
+	//_, err = db.Exec(`CREATE TABLE class_student (
+	//cid integer REFERENCES classes (cid),
+	//sid integer REFERENCES students (sid)
+	//)`)
+	//fmt.Println(err)
+
+	////////////////////////////////
+	//TODO FIXME STAHP OTHER KEYWORDS
+	//WIP
+	///////////////////////////////
+
+	//TODO some thought needed... this would be a shitton of rows
+	//_, err = db.Exec(`CREATE TABLE quiz_student_question_answer (
+	//qid integer REFERENCES quiz (qid),
+	//sid integer REFERENCES student (sid),
+	//number integer,
+	//answer text
+	//)`)
 
 	//_, err = db.Exec(`CREATE TABLE quiz (
 	//qid serial PRIMARY KEY,
@@ -177,7 +206,6 @@ func register(w http.ResponseWriter, r *http.Request) {
 	hash := sha256.Sum256(append([]byte(pass), salt...))
 	phash := string(hash[:])
 
-	// TODO check existence?
 	_, err = db.Exec(`INSERT INTO users (email, password, salt)
     VALUES($1, $2, $3)`, email, phash, salt)
 	if err != nil {
@@ -196,7 +224,6 @@ func register(w http.ResponseWriter, r *http.Request) {
 // going off of that, I guess you really just need to return an ID each time since that'll be
 // what's used to hit the DB. That may prove problematic but premature optimization is the root of all... well, you know
 func auth(w http.ResponseWriter, r *http.Request) error {
-	// FIXME stub to check for cookie
 	_, err := r.Cookie("logged-in")
 	if err != nil {
 		return err
