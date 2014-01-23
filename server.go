@@ -45,7 +45,7 @@ func init() {
 	//
 	//_, err = db.Exec(`DROP TABLE "Classes", "Users", "Students" CASCADE`)
 	//fmt.Println(err)
-	//_, err = db.Exec(`DROP TABLE classes, users, students, quiz CASCADE`)
+	//_, err = db.Exec(`DROP TABLE classes, users, students, quiz, class_student CASCADE`)
 	//fmt.Println(err)
 
 	//for getting table names -- handy
@@ -64,7 +64,7 @@ func init() {
 
 	//_, err = db.Exec(`CREATE TABLE users (
 	//uid serial PRIMARY KEY,
-	//email text,
+	//email text UNIQUE,
 	//password bytea,
 	//salt bytea
 	//)`)
@@ -143,14 +143,11 @@ func login(w http.ResponseWriter, r *http.Request) {
 	phash := string(hash[:]) //finicky
 
 	switch {
-	case err == sql.ErrNoRows:
-		// TODO add flash messages
-		fmt.Fprintf(w, "No user with that email.")
 	case err != nil:
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-	case dbpw != phash:
+	case err == sql.ErrNoRows || dbpw != phash:
 		// TODO add flash messages
-		fmt.Fprintf(w, "Incorrect password")
+		fmt.Fprintf(w, "Invalid login credentials")
 	default:
 		expire := time.Now().AddDate(0, 1, 0)
 		cookie := &http.Cookie{
@@ -160,10 +157,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 			Path:    "/",
 		}
 		http.SetCookie(w, cookie)
-		//TODO this is weird
+		//TODO this is weird (flash)
 		http.Redirect(w, r, "/", 307)
 	}
-	// TODO return site wide cookie & add to DB
+	//TODO add cookie to db
 }
 
 func register(w http.ResponseWriter, r *http.Request) {
@@ -177,12 +174,12 @@ func register(w http.ResponseWriter, r *http.Request) {
 	hash := sha256.Sum256(append([]byte(pass), salt...))
 	phash := string(hash[:])
 
-	// TODO check existence?
 	_, err = db.Exec(`INSERT INTO users (email, password, salt)
     VALUES($1, $2, $3)`, email, phash, salt)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+	//FIXME redirect to login
 }
 
 // checks for cookie; if no cookie then redirect to home page
@@ -195,8 +192,9 @@ func register(w http.ResponseWriter, r *http.Request) {
 // then with that knowledge, get teacher specific data from database (in other methods...).
 // going off of that, I guess you really just need to return an ID each time since that'll be
 // what's used to hit the DB. That may prove problematic but premature optimization is the root of all... well, you know
+//
+// TODO help Naven Johnson find his special purpose
 func auth(w http.ResponseWriter, r *http.Request) error {
-	// FIXME stub to check for cookie
 	_, err := r.Cookie("logged-in")
 	if err != nil {
 		return err
