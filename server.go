@@ -9,6 +9,7 @@ import (
 	_ "github.com/lib/pq"
 	"html/template"
 	"net/http"
+  //"strconv"
 )
 
 var templates = template.Must(template.ParseGlob("templates/*.html"))
@@ -108,6 +109,17 @@ func auth(w http.ResponseWriter, r *http.Request) {
 	//FIXME stub to check for cookie
 }
 
+func handleAnswer(s http.ResponseWriter, r *http.Request){
+ // vars := mux.Vars(r)
+ // qID, err := strconv.Atoi(vars["id"])
+ // if err != nil {
+ //   fmt.Println(err)
+ // } else {
+ //   fmt.Printf("%d", qID) //testing
+ // }
+ fmt.Println("here")
+}
+
 func main() {
 	r := mux.NewRouter()
 	r.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("/static/"))))
@@ -119,8 +131,8 @@ func main() {
 
 	//TODO these are just ideas
 	//r.HandleFunc("/quiz/{id}", handleQuizGet).Methods("GET")
-	//r.HandleFunc("/quiz/{id}", handleAnswer).Methods("PUT")
-	//r.HandleFunc("/quiz/{id}/edit, handleQuizEdit).Methods("POST, GET")
+	r.HandleFunc("/quiz/{id}", handleAnswer).Methods("PUT")
+	//r.HandleFunc("/quiz/{id}/edit", handleQuizEdit).Methods("POST, GET")
 	//r.HandleFunc("/quiz/add, handleQuizCreate).Methods("POST")
 
 	http.Handle("/", r)
