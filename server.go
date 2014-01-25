@@ -9,7 +9,11 @@ import (
 	_ "github.com/lib/pq"
 	"html/template"
 	"net/http"
+
+  	"strconv"
+
 	"time"
+
 )
 
 var templates = template.Must(template.New("").Delims("<<<", ">>>").ParseGlob("templates/*.html"))
@@ -204,6 +208,35 @@ func auth(w http.ResponseWriter, r *http.Request) error {
 	}
 }
 
+// add more later
+func handleQuizGet(w http.ResponseWriter, r *http.Request) {  
+  vars := mux.Vars(r)
+  qID, err := strconv.Atoi(vars["id"])
+  if err != nil {
+    fmt.Println(err)
+  } else {
+    //fmt.Printf("%d", qID) //testing 
+    rows, err := db.Query(`SELECT * FROM quiz WHERE qid=$1`, qID)
+    if err != nil {
+    fmt.Printf("%s", err)
+    } else { 
+      for rows.Next() {
+        //fmt.Printf("here") //testing
+        var qid int
+        var title string
+        var info string
+        var cid int
+        err = rows.Scan(&qid, &title, &info, &cid) 
+        if err != nil {
+        fmt.Printf("%s", err)
+        } else {
+          fmt.Printf("\nqid:%d \ttitle:%s \tinfo:%s \tcid:%d", qid, title, info, cid)
+      }
+      }
+    }
+}
+} 
+
 func main() {
 	r := mux.NewRouter()
 	r.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
@@ -212,6 +245,14 @@ func main() {
 	r.HandleFunc("/logmein", login).Methods("POST")
 	r.HandleFunc("/register", handlePage("register")).Methods("GET")
 	r.HandleFunc("/register", register).Methods("POST")
+
+
+	//TODO these are just ideas
+	r.HandleFunc("/quiz/{id}", handleQuizGet).Methods("GET")
+	//r.HandleFunc("/quiz/{id}", handleAnswer).Methods("PUT")
+	//r.HandleFunc("/quiz/{id}/edit", handleQuizEdit).Methods("POST, GET")
+	//r.HandleFunc("/quiz/add, handleQuizCreate).Methods("POST")
+
 	r.HandleFunc("/dashboard", handlePage("dashboard")).Methods("GET")
 	r.HandleFunc("/quiz", handlePage("quiz")).Methods("GET")
 
@@ -220,6 +261,7 @@ func main() {
 	// r.HandleFunc("/quiz/{id}", handleAnswer).Methods("PUT")
 	// r.HandleFunc("/quiz/{id}/edit, handleQuizEdit).Methods("POST, GET")
 	// r.HandleFunc("/quiz/add, handleQuizCreate).Methods("POST")
+
 
 	http.Handle("/", r)
 	http.ListenAndServe(":8080", nil)
