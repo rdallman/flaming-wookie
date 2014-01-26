@@ -33,6 +33,11 @@ type Answer struct {
 	Correct bool
 }
 
+type User struct{
+	Uid int
+	Email string
+}
+
 func init() {
 	var err error
 	db, err = sql.Open("postgres", "postgres://wookie:password@absker.com/wookie?sslmode=disable")
@@ -122,12 +127,14 @@ func init() {
 
 func handlePage(name string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := auth(w, r)
-		if err == nil {
-			// TODO redirect to dashboard
+		uid, email := auth(w, r) //check for cookie
+		var err error
+		if uid == -1 { //no cookie
+			err = templates.ExecuteTemplate(w, name+".html", nil)
+		} else { //cookie - execute template with 'User' struct
+			user := &User{Uid: uid, Email: email}
+			err = templates.ExecuteTemplate(w, name+".html", user)
 		}
-
-		err = templates.ExecuteTemplate(w, name+".html", nil)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -153,29 +160,34 @@ func login(w http.ResponseWriter, r *http.Request) {
 		// TODO add flash messages
 		fmt.Fprintf(w, "Invalid login credentials")
 	default:
-		expire := time.Now().AddDate(0, 1, 0)
-		cookie := &http.Cookie{
-			Name:    "logged-in",
-			Value:   inputEmail,
-			Expires: expire,
-			Path:    "/",
-		}
-		http.SetCookie(w, cookie)
+		createCookie(w, inputEmail)
 		//TODO this is weird (flash)
 		http.Redirect(w, r, "/", 307)
 	}
-	//TODO add cookie to db
 }
 
 func register(w http.ResponseWriter, r *http.Request) {
-	email, pass := r.FormValue("email"), r.FormValue("password")
+	email, pass1, pass2 := r.FormValue("email"), r.FormValue("password"), r.FormValue("password confirm")
+
+	//check if any fields are blank or if passwords do not match
+	if email=="" || pass1=="" || pass2=="" || pass1!=pass2 {
+		fmt.Fprintf(w, "Invalid information")
+		return //do not add to db
+	} 
+	//check to see if email already exists in db
+	var id int
+	er := db.QueryRow(`SELECT uid FROM users WHERE email=$1`, email).Scan(&id)
+	if er != sql.ErrNoRows {
+		fmt.Fprintf(w, "User already exists")
+		return //do not add to db
+	}
 
 	salt := make([]byte, 32)
 	_, err := rand.Read(salt)
 	//saltstr := string(salt[:])
 
 	// create secure, salted hash
-	hash := sha256.Sum256(append([]byte(pass), salt...))
+	hash := sha256.Sum256(append([]byte(pass1), salt...))
 	phash := string(hash[:])
 
 	_, err = db.Exec(`INSERT INTO users (email, password, salt)
@@ -183,28 +195,54 @@ func register(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	//FIXME redirect to login
+	
+	//(login) create cookie and redirect to homepage
+	createCookie(w, email)
+	http.Redirect(w, r, "/", 307)
 }
 
-// checks for cookie; if no cookie then redirect to home page
-//
-// this function... I don't think it does what you think it does
-// I am Inigo Montoya. You kill my father. Prepare to die.
-//
-// should be done on every request (sigh, I know) and display different options for
-// teachers, alternatively you could return a user each time and if not nil, you have a teacher
-// then with that knowledge, get teacher specific data from database (in other methods...).
-// going off of that, I guess you really just need to return an ID each time since that'll be
-// what's used to hit the DB. That may prove problematic but premature optimization is the root of all... well, you know
-//
-// TODO help Naven Johnson find his special purpose
-func auth(w http.ResponseWriter, r *http.Request) error {
-	_, err := r.Cookie("logged-in")
-	if err != nil {
-		return err
-	} else {
-		// fmt.Fprintf(w, "You has cookie: %s", cookie.Value)
-		return nil
+//deletes cookie and redirects to homepage
+func logout(w http.ResponseWriter, r *http.Request) {
+	expire := time.Now()
+	cookie := &http.Cookie{
+		Name:    "logged-in",
+		Value:   "",
+		Expires: expire,
+		Path:    "/",
+		MaxAge: -1,
+	}
+	http.SetCookie(w, cookie)
+	http.Redirect(w, r, "/", 307)
+	//TODO (when we add cookies to db) delete cookie from db
+}
+
+//creates and sets cookie for user
+func createCookie(w http.ResponseWriter, email string) {
+	expire := time.Now().AddDate(0, 1, 0)
+	cookie := &http.Cookie{
+		Name:    "logged-in",
+		Value:   email,
+		Expires: expire,
+		Path:    "/",
+	}
+	http.SetCookie(w, cookie)
+	//TODO add cookie to db
+}
+
+//checks for cookie
+// 	if cookie -> returns the user's uid and email
+//	if no cookie (or invalid) -> return -1 and ""
+func auth(w http.ResponseWriter, r *http.Request) (int, string) {
+	cookie, err := r.Cookie("logged-in")
+	if err != nil { // no cookie
+		return -1, ""
+	} else { //cookie
+		var uid int
+		err = db.QueryRow(`SELECT uid FROM users WHERE email=$1`, cookie.Value).Scan(&uid)
+		if err != nil { // invalid user
+			return -1, ""
+		}
+		return uid, cookie.Value // valid user
 	}
 }
 
@@ -244,6 +282,7 @@ func main() {
 	r.HandleFunc("/", handlePage("index"))
 	r.HandleFunc("/login", handlePage("login")).Methods("GET")
 	r.HandleFunc("/logmein", login).Methods("POST")
+	r.HandleFunc("/logmeout", logout)
 	r.HandleFunc("/register", handlePage("register")).Methods("GET")
 	r.HandleFunc("/register", register).Methods("POST")
 
