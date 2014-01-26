@@ -9,9 +9,8 @@ import (
 	_ "github.com/lib/pq"
 	"html/template"
 	"net/http"
-
-  	"strconv"
-
+  "encoding/json"
+  "strconv"
 	"time"
 
 )
@@ -275,6 +274,33 @@ func handleQuizGet(w http.ResponseWriter, r *http.Request) {
 }
 } 
 
+
+func handleQuizList(w http.ResponseWriter, r *http.Request) {
+  //title and id, return JSON
+  rows, err := db.Query(`SELECT qid, title FROM quiz`)
+  if err != nil {
+    fmt.Printf("%s", err)
+  } else {
+    quizzes := make(map[string]int)
+    for rows.Next() {
+      var qid int
+      var title string
+      err = rows.Scan(&qid, &title)
+      if err != nil {
+        fmt.Println(err)
+      } else { 
+        quizzes[title] = qid
+      }
+    }
+    jquiz, err := json.Marshal(quizzes)
+    if err != nil {
+      fmt.Println(err)
+    } else { 
+    fmt.Printf("\n%s", jquiz)
+    }
+  }
+}
+
 func main() {
 	r := mux.NewRouter()
 	// r.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
@@ -288,9 +314,11 @@ func main() {
 
 
 	//TODO these are just ideas
+
+  r.HandleFunc("/quiz/list", handleQuizList).Methods("GET")
 	r.HandleFunc("/quiz/{id}", handleQuizGet).Methods("GET")
 	//r.HandleFunc("/quiz/{id}", handleAnswer).Methods("PUT")
-	//r.HandleFunc("/quiz/{id}/edit", handleQuizEdit).Methods("POST, GET")
+	//r.HandleFunc("/quiz/{id}/edit", handleQuizEdit).Methods("GET")
 	//r.HandleFunc("/quiz/add, handleQuizCreate).Methods("POST")
 
 	r.HandleFunc("/dashboard", handlePage("dashboard")).Methods("GET")
@@ -301,7 +329,6 @@ func main() {
 	// r.HandleFunc("/quiz/{id}", handleAnswer).Methods("PUT")
 	// r.HandleFunc("/quiz/{id}/edit, handleQuizEdit).Methods("POST, GET")
 	r.HandleFunc("/quiz/add", handleQuizCreate).Methods("POST")
-
 
 	http.Handle("/", r)
 	http.ListenAndServe(":8080", nil)
