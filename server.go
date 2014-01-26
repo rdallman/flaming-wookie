@@ -274,6 +274,29 @@ func handleQuizGet(w http.ResponseWriter, r *http.Request) {
 }
 } 
 
+// just an idea, not sure if we actually need this
+func handleQuizUpdate(w http.ResponseWriter, r *http.Request){
+ fmt.Println("HERE") 
+  vars := mux.Vars(r)
+  //not sure we need all these, but for now...
+  qid, err1 := strconv.Atoi(vars["id"])
+  title := vars["title"]
+  info := vars["info"]
+  cid, err2 := strconv.Atoi(vars["cid"])
+
+  if err1 != nil || err2 != nil {
+    fmt.Println("err1 $1\terr2 $2", err1, err2)
+  } else {
+    _, err := db.Exec(`UPDATE quiz SET title=$1, info=$2, cid=$3 WHERE qid=$4`, title, info, cid, qid)
+    if err != nil {
+      fmt.Println(err)
+    } else {
+      fmt.Println("\nupdated.")
+    }
+  }
+
+
+}
 
 func handleQuizList(w http.ResponseWriter, r *http.Request) {
   //title and id, return JSON
@@ -316,6 +339,7 @@ func main() {
 	//TODO these are just ideas
 
   r.HandleFunc("/quiz/list", handleQuizList).Methods("GET")
+  r.HandleFunc("/quiz/update/{id}/{title}/{info}/{cid}", handleQuizUpdate).Methods("GET")
 	r.HandleFunc("/quiz/{id}", handleQuizGet).Methods("GET")
 	//r.HandleFunc("/quiz/{id}", handleAnswer).Methods("PUT")
 	//r.HandleFunc("/quiz/{id}/edit", handleQuizEdit).Methods("GET")
