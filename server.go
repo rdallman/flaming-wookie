@@ -39,9 +39,12 @@ func main() {
 	r.HandleFunc("/register", register).Methods("POST")
 
 	//TODO these are just ideas
+
+	r.HandleFunc("/quiz/list", handleQuizList).Methods("GET")
+	r.HandleFunc("/quiz/update/{id}/{title}/{info}/{cid}", handleQuizUpdate).Methods("GET")
 	r.HandleFunc("/quiz/{id}", handleQuizGet).Methods("GET")
 	//r.HandleFunc("/quiz/{id}", handleAnswer).Methods("PUT")
-	//r.HandleFunc("/quiz/{id}/edit", handleQuizEdit).Methods("POST, GET")
+	//r.HandleFunc("/quiz/{id}/edit", handleQuizEdit).Methods("GET")
 	//r.HandleFunc("/quiz/add, handleQuizCreate).Methods("POST")
 
 	r.HandleFunc("/dashboard", handlePage("dashboard")).Methods("GET")
