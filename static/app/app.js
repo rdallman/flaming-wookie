@@ -16,7 +16,20 @@ dashboardApp.config(['$routeProvider',
                         });
                     }]);
 
-dashboardApp.controller('MainController', function($scope) {
-
+dashboardApp.controller('MainController', function($scope, $http) {
+  $scope.quizzes = [];
+  
+  $http({
+    method: 'GET',
+    url: '/dashboard/quiz'
+  }).
+  success(function(data) {
+    angular.forEach(data, function(value, key) {
+      this.push({"Title": key, "id": value});
+    }, $scope.quizzes);
+  }).
+  error(function(data) {
+    // handle
+  });
 });
 
