@@ -42,9 +42,9 @@ func handleQuizUpdate(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	//not sure we need all these, but for now...
 	qid, err1 := strconv.Atoi(vars["id"])
-	title := vars["title"]
-	info := vars["info"]
-	cid, err2 := strconv.Atoi(vars["cid"])
+	title := r.FormValue("title")
+	info := r.FormValue("info")
+	cid, err2 := strconv.Atoi(r.FormValue("cid"))
 
 	if err1 != nil || err2 != nil {
 		fmt.Println("err1 $1\terr2 $2", err1, err2)

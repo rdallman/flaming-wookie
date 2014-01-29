@@ -101,16 +101,16 @@ func createCookie(w http.ResponseWriter, email string) {
 //checks for cookie
 // 	if cookie -> returns the user's uid and email
 //	if no cookie (or invalid) -> return -1 and ""
-func auth(w http.ResponseWriter, r *http.Request) (int, string) {
+func auth(w http.ResponseWriter, r *http.Request) *User {
 	cookie, err := r.Cookie("logged-in")
 	if err != nil { // no cookie
-		return -1, ""
+		return nil
 	} else { //cookie
 		var uid int
 		err = db.QueryRow(`SELECT uid FROM users WHERE email=$1`, cookie.Value).Scan(&uid)
 		if err != nil { // invalid user
-			return -1, ""
+			return nil
 		}
-		return uid, cookie.Value // valid user
+		return &User{uid, cookie.Value} // valid user
 	}
 }

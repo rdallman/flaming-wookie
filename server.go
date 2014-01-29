@@ -8,20 +8,19 @@ import (
 	"net/http"
 )
 
-var templates = template.Must(template.New("").Delims("<<<", ">>>").ParseGlob("templates/*.html"))
-var db *sql.DB
+var (
+	templates = template.Must(template.New("").Delims("<<<", ">>>").ParseGlob("templates/*.html"))
+	db        *sql.DB
+	qzSesh    = make(map[int]Session)
+)
+
+//student sends: ID:PIN as USER in header...
 
 //TODO figure out somewhere better to put this...
 func handlePage(name string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		uid, email := auth(w, r) //check for cookie
-		var err error
-		if uid == -1 { //no cookie
-			err = templates.ExecuteTemplate(w, name+".html", nil)
-		} else { //cookie - execute template with 'User' struct
-			user := &User{Uid: uid, Email: email}
-			err = templates.ExecuteTemplate(w, name+".html", user)
-		}
+		user := auth(w, r) //check for cookie
+		err := templates.ExecuteTemplate(w, name+".html", user)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -40,12 +39,14 @@ func main() {
 
 	//TODO these are just ideas
 
-	r.HandleFunc("/quiz/list", handleQuizList).Methods("GET")
-	r.HandleFunc("/quiz/update/{id}/{title}/{info}/{cid}", handleQuizUpdate).Methods("GET")
-	r.HandleFunc("/quiz/{id}", handleQuizGet).Methods("GET")
-	//r.HandleFunc("/quiz/{id}", handleAnswer).Methods("PUT")
-	//r.HandleFunc("/quiz/{id}/edit", handleQuizEdit).Methods("GET")
-	//r.HandleFunc("/quiz/add, handleQuizCreate).Methods("POST")
+	r.HandleFunc("/dashboard/quiz", handleQuizList).Methods("GET")
+	r.HandleFunc("/dashboard/quiz", handleQuizCreate).Methods("POST")
+	r.HandleFunc("/dashboard/quiz/{id}", handleQuizUpdate).Methods("POST")
+	r.HandleFunc("/dashboard/quiz/{id}", handleQuizGet).Methods("GET")
+	//r.HandleFunc("/dashboard/quiz/{id}", handleQuizDelete).Methods("DELETE")
+
+	r.HandleFunc("/quiz/{id}/state", changeState).Methods("PUT")
+	r.HandleFunc("/quiz/{id}/answer", handleAnswer).Methods("PUT POST")
 
 	r.HandleFunc("/dashboard", handlePage("dashboard")).Methods("GET")
 	r.HandleFunc("/quiz", handlePage("quiz")).Methods("GET")
