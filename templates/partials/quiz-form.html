@@ -1,3 +1,11 @@
+<style>
+    .list-group-item .delete {
+      display: none;
+    }
+    .list-group-item:hover .delete {
+      display: block;
+    }
+  </style>
 <div class="container" ng-controller="QuizController">
     <h1>Create Quiz</h1>
     <button class="btn btn-primary" ng:click="postQuiz()">Post Quiz!</button><br/>
@@ -26,12 +34,12 @@
         <ul class="list-group">
           <li class="list-group-item">
             <span style="float:left;"><strong>Question {{$index + 1}} :</strong></span>
-            <span style="float:right"><a href="#" class="delete" ng-click="removeQuestion(question)"><i class="fa fa-trash-o fa-lg text-danger"></i></a></span><br />
+            <span style="float:right"><a class="delete" ng-click="removeQuestion(question)"><i class="fa fa-trash-o fa-lg text-danger"></i></a></span><br />
             <span style="margin-left:20px;">{{question.questionText}}</span>
           </li>
           <li class="list-group-item" ng-repeat="answer in question.answers">
             {{answer}}
-            <span style="float:right"><a href="#" class="delete" ng-click="removeAnswer(question, answer)"><i class="fa fa-trash-o fa-lg text-danger"></i></a></span>
+            <span style="float:right"><a class="delete" ng-click="removeAnswer(question, answer)"><i class="fa fa-trash-o fa-lg text-danger"></i></a></span>
           </li>
           <li class="list-group-item">
             <form ng-submit="addAnswer(question, newAnswer)">
