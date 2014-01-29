@@ -1,5 +1,5 @@
 
-<html>
+<html ng-app="dashboardApp">
 <head>
 <title>Dashboard</title>
   <script src="//code.jquery.com/jquery.js"></script>
@@ -9,11 +9,19 @@
   <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet" />
   <link href="/static/styles.css" rel="stylesheet" media="screen">
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular.min.js"></script>
-  <script src="/static/app.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular-route.js"></script>
+  
 </head>
 <body>
   	<div class="container">
   		<h1>Dashboard</h1>
+      <a href="#/main">Home</a>
+      <a href="#/quiz-create">Quiz</a>
+      <div ng-view></div>
   	</div>
+
+    <script src="/static/app/app.js"></script>
+    <script src="/static/app/controllers/quizCtrl.js"></script>
+
 </body>
 </html>
