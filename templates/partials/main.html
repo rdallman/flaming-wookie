@@ -1,0 +1,15 @@
+<div ng-controller="MainController">
+	<h1>Dashboard</h1>
+	<a href="#/quiz-create" class="btn btn-primary">Create Quiz!</a>
+	<p>Hey</p>
+	<div class="row">
+		<div class="col-md-6">
+			<ul class="list-group">
+				<li class="list-group-item" ng-repeat="quiz in quizzes">
+					<a href="#/quiz/{{ quiz.id }}">{{ quiz.Title }}</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+	{{ quizzes }}
+</div>

@@ -30,6 +30,7 @@ func handlePage(name string) func(http.ResponseWriter, *http.Request) {
 func main() {
 	r := mux.NewRouter()
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
+	r.PathPrefix("/templates/").Handler(http.StripPrefix("/templates/", http.FileServer(http.Dir("templates/"))))
 	r.HandleFunc("/", handlePage("index"))
 	r.HandleFunc("/login", handlePage("login")).Methods("GET")
 	r.HandleFunc("/logmein", login).Methods("POST")
@@ -48,7 +49,7 @@ func main() {
 	r.HandleFunc("/quiz/{id}/state", changeState).Methods("PUT")
 	r.HandleFunc("/quiz/{id}/answer", handleAnswer).Methods("PUT")
 
-	r.HandleFunc("/dashboard", handlePage("dashboard")).Methods("GET")
+	r.HandleFunc("/dashboard/", handlePage("dashboard")).Methods("GET")
 	r.HandleFunc("/quiz", handlePage("quiz")).Methods("GET")
 	r.HandleFunc("/quiz/add", handleQuizCreate).Methods("POST")
 

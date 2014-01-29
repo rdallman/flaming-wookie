@@ -80,7 +80,7 @@ func handleQuizList(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 		} else {
-			fmt.Printf("\n%s", jquiz)
+			fmt.Fprintf(w, string(jquiz))
 		}
 	}
 }
