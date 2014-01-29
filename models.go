@@ -21,8 +21,7 @@ type User struct {
 }
 
 type QAnswers struct {
-	//map[sid]answer#
-	studentAnswer map[int]string
+	studentAnswer map[int]string //map[sid]answer
 }
 
 type UserReply struct {

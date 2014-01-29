@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -18,13 +19,15 @@ func handleAnswer(w http.ResponseWriter, r *http.Request) {
 	qid, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		//TODO does this fallthrough?
 	}
-	sid, err := strconv.Atoi(r.Header.Get("Authorization")) //TODO yeah this has a :
+	//TODO Basic Auth is base64 encoded and gross... when you're feeling extra bored
+	sid, err := strconv.Atoi(r.Header.Get("Authorization"))
 	fmt.Fprintf(w, "%d %v", sid, err)
 	a := r.FormValue("answer")
 	//TODO if session doesn't exist, reply with 401? something that indicates not in progress?
 	qzSesh[qid].replies <- UserReply{sid, a}
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, Response{true})
 }
 
 // must have cookie
@@ -47,20 +50,38 @@ func changeState(w http.ResponseWriter, r *http.Request) {
 		qzSesh[qid] = Session{qid, make(chan UserReply), make(chan int)}
 		go quizSesh(qzSesh[qid])
 	}
+	fmt.Println(state)
 	qzSesh[qid].state <- state
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, Response{true})
 	//TODO reply w/ 200
+}
+
+type Response struct {
+	Success bool `json:success`
+}
+
+func (r Response) String() string {
+	b, err := json.Marshal(r)
+	if err != nil {
+		return ""
+	}
+	return string(b)
 }
 
 //send 0
 func quizSesh(s Session) {
-	var state int
-	s.state <- 0
-	answers := make([]QAnswers, 0)
+	state := 0
+	//[]map[sid]answer
+	answers := make([]map[int]string, 0)
 	for {
 		select {
 		case ur := <-s.replies:
 			fmt.Println(ur.sid, ur.ans)
-			answers[state].studentAnswer[ur.sid] = ur.ans
+			if state >= len(answers) {
+				answers = append(answers, make(map[int]string))
+			}
+			answers[state][ur.sid] = ur.ans
 		case state = <-s.state:
 			fmt.Println(state)
 			if state < 0 {
@@ -71,7 +92,8 @@ func quizSesh(s Session) {
 	}
 }
 
-func quit(qid int, qa []QAnswers) {
+//map[sid]answer
+func quit(qid int, qa []map[int]string) {
 	var quiz Quiz
 	err := db.QueryRow(`SELECT info FROM quiz WHERE qid = $1`, qid).Scan(&quiz)
 	if err != nil {
@@ -84,7 +106,7 @@ func quit(qid int, qa []QAnswers) {
 
 	for i, q := range qa {
 		//TODO could insert qa into Quiz here for further statistics
-		for s, ans := range q.studentAnswer {
+		for s, ans := range q {
 			if ans == quiz.Questions[i].Correct {
 				correct[s]++
 			}
