@@ -19,7 +19,7 @@ var (
 
 func handlePage(name string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := auth(w, r) //check for cookie
+		user := auth(r) //check for cookie
 		err := templates.ExecuteTemplate(w, name+".html", user)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

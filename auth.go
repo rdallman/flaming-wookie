@@ -11,7 +11,6 @@ import (
 )
 
 func login(w http.ResponseWriter, r *http.Request) {
-	//r.ParseForm()
 	inputEmail, inputPass := r.FormValue("email"), r.FormValue("password")
 
 	//dbpw is the salted sha256 hash we stored as password
@@ -23,15 +22,14 @@ func login(w http.ResponseWriter, r *http.Request) {
 	phash := string(hash[:]) //finicky
 
 	switch {
+	case err == sql.ErrNoRows, dbpw != phash:
+		// TODO add flash messages
+		http.Redirect(w, r, "/login", 302)
 	case err != nil:
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-	case err == sql.ErrNoRows || dbpw != phash:
-		// TODO add flash messages
-		fmt.Fprintf(w, "Invalid login credentials")
 	default:
 		createCookie(w, inputEmail)
-		//TODO this is weird (flash)
-		http.Redirect(w, r, "/", 307)
+		http.Redirect(w, r, "/", 302)
 	}
 }
 
@@ -67,7 +65,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 
 	//(login) create cookie and redirect to homepage
 	createCookie(w, email)
-	http.Redirect(w, r, "/", 307)
+	http.Redirect(w, r, "/", 302)
 }
 
 //deletes cookie and redirects to homepage
@@ -81,7 +79,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		MaxAge:  -1,
 	}
 	http.SetCookie(w, cookie)
-	http.Redirect(w, r, "/", 307)
+	http.Redirect(w, r, "/", 302)
 	//TODO (when we add cookies to db) delete cookie from db
 }
 
@@ -101,16 +99,17 @@ func createCookie(w http.ResponseWriter, email string) {
 //checks for cookie
 // 	if cookie -> returns the user's uid and email
 //	if no cookie (or invalid) -> return -1 and ""
-func auth(w http.ResponseWriter, r *http.Request) *User {
+func auth(r *http.Request) *User {
 	cookie, err := r.Cookie("logged-in")
 	if err != nil { // no cookie
 		return nil
-	} else { //cookie
-		var uid int
-		err = db.QueryRow(`SELECT uid FROM users WHERE email=$1`, cookie.Value).Scan(&uid)
-		if err != nil { // invalid user
-			return nil
-		}
-		return &User{uid, cookie.Value} // valid user
 	}
+
+	var uid int
+	//TODO make this more secure... easily spoofed
+	err = db.QueryRow(`SELECT uid FROM users WHERE email=$1`, cookie.Value).Scan(&uid)
+	if err != nil { // invalid user
+		return nil
+	}
+	return &User{uid, cookie.Value} // valid user
 }
