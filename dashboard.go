@@ -5,6 +5,8 @@ import (
 	"net/http"
 )
 
+
+
 // TODO: need to parse body for the title of the quiz, for now everything is just Test
 // TODO: unsafe, definitely don't need to print Postgres errors back to the browser, but need debugging
 // TODO: flash message to show quiz was added, and redirect
@@ -27,6 +29,8 @@ import (
 //    }
 //
 // on creation just make a blank map for grades
+
+// inserts a quiz from an AJAX POST request
 func handleQuizCreate(w http.ResponseWriter, r *http.Request) {
 	// grab body of request (should be the json of the quiz)
 	p := make([]byte, r.ContentLength)
