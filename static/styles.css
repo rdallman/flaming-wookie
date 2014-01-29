@@ -15,10 +15,19 @@
 
   .container {
     width: auto;
-    font-size: 30px;
+    font-size: 16px;
     font-family: "Oswald";
-    color: white;
     font-weight: 300;
+  }
+
+  .navbar {
+    padding-right: 20px;
+    background: rgba(0,0,0,0);
+    border: 0;
+  }
+
+  .vertical-offset-100 {
+    padding-top: 100px;
   }
 
   .panel {
@@ -46,6 +55,7 @@
   #push,
   #footer {
     height: 120px;
+    color: white;
   }
 
   @media (max-width:767px) {
