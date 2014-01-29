@@ -23,7 +23,7 @@ func handleAnswer(w http.ResponseWriter, r *http.Request) {
 	//TODO Basic Auth is base64 encoded and gross... when you're feeling extra bored
 	sid, err := strconv.Atoi(r.Header.Get("Authorization"))
 	fmt.Fprintf(w, "%d %v", sid, err)
-	a := r.FormValue("answer")
+	a, err := strconv.Atoi(r.FormValue("answer"))
 	//TODO if session doesn't exist, reply with 401? something that indicates not in progress?
 	qzSesh[qid].replies <- UserReply{sid, a}
 	w.Header().Set("Content-Type", "application/json")
@@ -73,13 +73,13 @@ func (r Response) String() string {
 func quizSesh(s Session) {
 	state := 0
 	//[]map[sid]answer
-	answers := make([]map[int]string, 0)
+	answers := make([]map[int]int, 0)
 	for {
 		select {
 		case ur := <-s.replies:
 			fmt.Println(ur.sid, ur.ans)
 			if state >= len(answers) {
-				answers = append(answers, make(map[int]string))
+				answers = append(answers, make(map[int]int))
 			}
 			answers[state][ur.sid] = ur.ans
 		case state = <-s.state:
@@ -93,7 +93,7 @@ func quizSesh(s Session) {
 }
 
 //map[sid]answer
-func quit(qid int, qa []map[int]string) {
+func quit(qid int, qa []map[int]int) {
 	var quiz Quiz
 	err := db.QueryRow(`SELECT info FROM quiz WHERE qid = $1`, qid).Scan(&quiz)
 	if err != nil {
