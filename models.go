@@ -1,18 +1,15 @@
 package main
 
 type Quiz struct {
+	Title     string      `json:title`
 	Questions []Question  `json:questions`
 	Grades    map[int]int `json:grades` //map[sid]0-100
 }
 
 type Question struct {
-	Text    string
-	Answers []Answer
-	Correct string
-}
-
-type Answer struct {
-	Text string
+	Text    string   `json:text`
+	Answers []string `json:answers`
+	Correct int      `json:correct` //offset in []Answers
 }
 
 type User struct {
@@ -20,13 +17,9 @@ type User struct {
 	Email string
 }
 
-type QAnswers struct {
-	studentAnswer map[int]string //map[sid]answer
-}
-
 type UserReply struct {
 	sid int
-	ans string
+	ans int
 }
 
 type Session struct {
