@@ -46,7 +46,7 @@ func main() {
 	//r.HandleFunc("/dashboard/quiz/{id}", handleQuizDelete).Methods("DELETE")
 
 	r.HandleFunc("/quiz/{id}/state", changeState).Methods("PUT")
-	r.HandleFunc("/quiz/{id}/answer", handleAnswer).Methods("PUT POST")
+	r.HandleFunc("/quiz/{id}/answer", handleAnswer).Methods("PUT")
 
 	r.HandleFunc("/dashboard", handlePage("dashboard")).Methods("GET")
 	r.HandleFunc("/quiz", handlePage("quiz")).Methods("GET")
