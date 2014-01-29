@@ -1,0 +1,58 @@
+
+  html {
+    background: url(/static/perfect.jpg) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    height: 100%;
+  }
+
+  body {
+    height: 100%;
+    background: transparent;
+  }
+
+  .container {
+    width: auto;
+    font-size: 30px;
+    font-family: "Oswald";
+    color: white;
+    font-weight: 300;
+  }
+
+  .panel {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+
+  .checkbox {
+    color: black;
+    font-size: 16px;
+  }
+
+  h1 {
+    padding-top: 40px;
+    font-family: "Oswald";
+    font-weight: 300;
+  }
+
+  #wrap {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -120px;
+  }
+
+  #push,
+  #footer {
+    height: 120px;
+  }
+
+  @media (max-width:767px) {
+    #footer {
+      margin-left: -20px;
+      margin-right: -20px;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+  }
