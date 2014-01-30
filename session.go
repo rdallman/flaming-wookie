@@ -1,39 +1,69 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
 )
 
+//checks for err, replies with false success reply
+func writeErr(err error, w http.ResponseWriter) {
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, Response{"success": false})
+	}
+}
+
+func writeSuccess(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, Response{"success": true})
+}
+
+// handleAnswer qets the quizID from the given URL w,
+// gets an answer from a client, and stores it in a map.
 //PUT/POST /quiz/{id}/answer
-//  body:
-//    answer : string
+//  body (json):
+//    {
+//      "Id"      : string
+//      "Answer"  : int
+//    }
+//
+//  reply (json):
+//    {
+//      "Success": bool
+//    }
 //
 //TODO auth student
 func handleAnswer(w http.ResponseWriter, r *http.Request) {
+	_ = sql.ErrNoRows
 	vars := mux.Vars(r)
+	decoder := json.NewDecoder(r.Body)
+	t := struct {
+		Answer int
+		Id     string
+	}{}
+	err := decoder.Decode(&t)
+	writeErr(err, w)
+
 	qid, err := strconv.Atoi(vars["id"])
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	//TODO Basic Auth is base64 encoded and gross... when you're feeling extra bored
-	sid, err := strconv.Atoi(r.Header.Get("Authorization"))
-	fmt.Fprintf(w, "%d %v", sid, err)
-	a, err := strconv.Atoi(r.FormValue("answer"))
+	writeErr(err, w)
+
 	//TODO if session doesn't exist, reply with 401? something that indicates not in progress?
-	qzSesh[qid].replies <- UserReply{sid, a}
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprint(w, Response{true})
+	qzSesh[qid].replies <- UserReply{t.Id, t.Answer}
+	writeSuccess(w)
 }
 
 // must have cookie
 //PUT /quiz/{id}/state
 //  body:
 //    state : int
+//
+// TODO json me, authenticate cookie
 func changeState(w http.ResponseWriter, r *http.Request) {
 	//auth()
 	vars := mux.Vars(r)
@@ -52,14 +82,10 @@ func changeState(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println(state)
 	qzSesh[qid].state <- state
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprint(w, Response{true})
-	//TODO reply w/ 200
+	writeSuccess(w)
 }
 
-type Response struct {
-	Success bool `json:success`
-}
+type Response map[string]interface{}
 
 func (r Response) String() string {
 	b, err := json.Marshal(r)
@@ -72,15 +98,12 @@ func (r Response) String() string {
 //send 0
 func quizSesh(s Session) {
 	state := 0
-	//[]map[sid]answer
-	answers := make([]map[int]int, 0)
+	//[]map[sid]answer //TODO fix this size? we know how many ?'s there are...
+	answers := make([]map[string]int, 0)
 	for {
 		select {
 		case ur := <-s.replies:
 			fmt.Println(ur.sid, ur.ans)
-			if state >= len(answers) {
-				answers = append(answers, make(map[int]int))
-			}
 			answers[state][ur.sid] = ur.ans
 		case state = <-s.state:
 			fmt.Println(state)
@@ -88,42 +111,66 @@ func quizSesh(s Session) {
 				go quit(s.qid, answers)
 				break
 			}
+			if state >= len(answers) { //only add to []answers as needed ~Dicey
+				answers = append(answers, make(map[string]int))
+			}
 		}
 	}
 }
 
 //map[sid]answer
-func quit(qid int, qa []map[int]int) {
-	var quiz Quiz
-	err := db.QueryRow(`SELECT info FROM quiz WHERE qid = $1`, qid).Scan(&quiz)
+func quit(qid int, qa []map[string]int) {
+	var qstring string
+	err := db.QueryRow(`SELECT info FROM quiz WHERE qid = $1`, qid).Scan(&qstring)
 	if err != nil {
 		//TODO uh this is really bad at this point
-		fmt.Println("cannot find quiz")
+		fmt.Println("cannot find quiz", err, qid)
+	}
+
+	var quiz Quiz
+	err = json.Unmarshal([]byte(qstring), &quiz)
+	if err != nil {
+		fmt.Println(err)
 	}
 
 	//map[sid]#correct
-	correct := make(map[int]int)
+	correct := make(map[string]int)
 
-	for i, q := range qa {
-		//TODO could insert qa into Quiz here for further statistics
-		for s, ans := range q {
+	//add number of correct
+	// for each question
+	//   for each answer
+	for i, question := range qa { //TODO could insert qa into Quiz for further statistics
+		for s, ans := range question {
 			if ans == quiz.Questions[i].Correct {
 				correct[s]++
+			} else {
+				if _, ok := correct[s]; !ok {
+					correct[s] = 0
+				}
 			}
 		}
 	}
 
-	grades := make(map[int]int)
+	//map[sid]0-100
+	grades := make(map[string]int)
 	for s, c := range correct {
-		grades[s] = c / len(quiz.Questions)
+		grades[s] = int(float64(c) / float64(len(quiz.Questions)) * 100)
 	}
 
 	quiz.Grades = grades
-	_, err = db.Exec(`UPDATE quiz SET info = $1 WHERE qid = $2`, quiz, qid)
+	q, err := json.Marshal(quiz)
 	if err != nil {
-		//TODO also really bad
-		fmt.Println("cannot save grades")
+		fmt.Println(err)
 	}
 
+	fmt.Println(string(q))
+
+	_, err = db.Exec(`UPDATE quiz SET info = $1 WHERE qid = $2`, string(q), qid)
+	if err != nil {
+		//TODO also really bad
+		fmt.Println("cannot save grades", err)
+	}
+
+	//remove session
 	delete(qzSesh, qid)
 }

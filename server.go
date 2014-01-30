@@ -17,6 +17,10 @@ var (
 
 //student sends: ID:PIN as USER in header...
 
+// handlePage renders the page template for the given name path.
+// If a user is logged in (determined by calling auth(r)) the template
+// is executed with the user's information.
+// TODO figure out somewhere better to put this...
 func handlePage(name string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := auth(r) //check for cookie

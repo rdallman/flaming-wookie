@@ -1,5 +1,9 @@
+// sets up app for angular, includes modules
+// TODO better/cleaner way of including modules?
 var dashboardApp = angular.module('dashboardApp', ['ngRoute', 'quizControllers']);
 
+// routes handler for angular
+// TODO better way of setting up routes? also resource handling
 dashboardApp.config(['$routeProvider',
                     function($routeProvider) {
                       $routeProvider.
@@ -11,11 +15,17 @@ dashboardApp.config(['$routeProvider',
                           templateUrl: '/templates/partials/quiz-form.html',
                           controller: 'QuizController'
                         }).
+                        when('/quiz/:id', {
+                          templateUrl: '/templates/partials/quiz.html',
+                          controller: 'QuizController'
+                        }).
                         otherwise({
                           redirectTo: '/main'
                         });
                     }]);
 
+// main controller for the main dashboard page
+// TODO pull out into another file
 dashboardApp.controller('MainController', function($scope, $http) {
   $scope.quizzes = [];
   

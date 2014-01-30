@@ -6,12 +6,14 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// init opens a connection to the database.
 func init() {
 	var err error
 	db, err = sql.Open("postgres", "postgres://wookie:password@absker.com/wookie?sslmode=disable")
 	//db, err = sql.Open("postgres", "user=reed dbname=wookie sslmode=disable")
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	//////////////////////////////////////
@@ -25,8 +27,8 @@ func init() {
 	//_, err = db.Exec(`DROP TABLE classes, users, students, quiz, class_student CASCADE`)
 	//fmt.Println(err)
 
-	//for getting table names -- handy
-	//
+	////for getting table names -- handy
+
 	//rows, err := db.Query("SELECT tablename from pg_catalog.pg_tables")
 	//for rows.Next() {
 	//var tablename string
@@ -35,8 +37,8 @@ func init() {
 	//}
 
 	/////////////////////////////////////////////
-	//creating
-	//TODO NOT NULL all of these later...
+	//////creating
+	//////TODO NOT NULL all of these later...
 	/////////////////////////////////////////////
 
 	//_, err = db.Exec(`CREATE TABLE users (
