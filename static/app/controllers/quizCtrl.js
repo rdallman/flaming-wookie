@@ -9,8 +9,8 @@ quizApp.controller('QuizController', function ($scope, $http) {
 					};
 	
 
-	$scope.addQuestion = function(text) {
-		$scope.quiz.questions.push({questionText: text, answers: []});
+	$scope.addQuestion = function(textIn) {
+		$scope.quiz.questions.push({text: textIn, correct: -1, answers: []});
 		$scope.newQuestion = "";
 	}
 
@@ -23,6 +23,10 @@ quizApp.controller('QuizController', function ($scope, $http) {
 		//$scope.newAnswers[question] = "";
 
 	}
+
+  $scope.setCorrectAnswer = function(question, ansIndex) {
+    question.correct = ansIndex;
+  }
 
 	$scope.removeQuestion = function(question) {
 		$scope.quiz.questions.splice($scope.quiz.questions.indexOf(question), 1);
