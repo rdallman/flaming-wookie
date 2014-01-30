@@ -1,7 +1,6 @@
 package main
 
 type Quiz struct {
-	Title		string		`json:title`
 	Questions []Question  `json:questions`
 	Grades    map[int]int `json:grades` //map[sid]0-100
 }
