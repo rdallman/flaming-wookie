@@ -1,5 +1,32 @@
 package main
 
+
+// {
+//     "title": "Main Quiz",
+//     "questions": [
+//         {
+//             "text": "What is the best programming language?",
+//             "correct": 2,
+//             "answers": [
+//                 "Go",
+//                 "Javascript",
+//                 "Anything except .NET"
+//             ],
+//             "$$hashKey": "01L"
+//         },
+//         {
+//             "text": "Is this the quiz you're looking for?",
+//             "correct": 0,
+//             "answers": [
+//                 "This is not the quiz we are looking for",
+//                 "Yes",
+//                 "No"
+//             ],
+//             "$$hashKey": "01Q"
+//         }
+//     ]
+// }
+
 type Quiz struct {
 	Title     string      `json:title`
 	Questions []Question  `json:questions`
@@ -10,6 +37,7 @@ type Question struct {
 	Text    string   `json:text`
 	Answers []string `json:answers`
 	Correct int      `json:correct` //offset in []Answers
+	
 }
 
 type User struct {
