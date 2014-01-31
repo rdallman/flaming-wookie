@@ -7,8 +7,10 @@ quizApp.controller('QuizController', function ($scope, $http, $route, $routePara
   $scope.id = -1;
 	$scope.quiz = {
 					title: "",
-					questions: []
+					questions: [],
+          grades: {}
 					};
+
   if ($routeParams.id !== undefined) {	
     $http({
         method: 'GET',

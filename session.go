@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"database/sql"
 	"net/http"
 	"strconv"
 )
@@ -15,6 +16,7 @@ import (
 //
 //TODO auth student
 func handleAnswer(w http.ResponseWriter, r *http.Request) {
+	_ = sql.ErrNoRows
 	vars := mux.Vars(r)
 	qid, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -98,7 +100,8 @@ func quit(qid int, qa []map[int]int) {
 	err := db.QueryRow(`SELECT info FROM quiz WHERE qid = $1`, qid).Scan(&quiz)
 	if err != nil {
 		//TODO uh this is really bad at this point
-		fmt.Println("cannot find quiz")
+		fmt.Println("cannot find quiz", err)
+
 	}
 
 	//map[sid]#correct
@@ -122,7 +125,7 @@ func quit(qid int, qa []map[int]int) {
 	_, err = db.Exec(`UPDATE quiz SET info = $1 WHERE qid = $2`, quiz, qid)
 	if err != nil {
 		//TODO also really bad
-		fmt.Println("cannot save grades")
+		fmt.Println("cannot save grades", err)
 	}
 
 	delete(qzSesh, qid)
