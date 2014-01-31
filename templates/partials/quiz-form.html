@@ -5,6 +5,15 @@
     .list-group-item:hover .delete {
       display: block;
     }
+    .list-group-item .check {
+      color: #777;
+    }
+    .list-group-item .check:hover {
+      color: #090;
+    }
+    .list-group-item .selected {
+      color: #090;
+    }
   </style>
 <div class="container" ng-controller="QuizController">
     <h1>Create Quiz</h1>
@@ -35,11 +44,12 @@
           <li class="list-group-item">
             <span style="float:left;"><strong>Question {{$index + 1}} :</strong></span>
             <span style="float:right"><a class="delete" ng-click="removeQuestion(question)"><i class="fa fa-trash-o fa-lg text-danger"></i></a></span><br />
-            <span style="margin-left:20px;">{{question.questionText}}</span>
+            <span style="margin-left:20px;">{{question.text}}</span>
           </li>
           <li class="list-group-item" ng-repeat="answer in question.answers">
+            <a ng-click="setCorrectAnswer(question, $index)" class="check" ng-class="{selected: $index==question.correct}"><i class="fa fa-check fa-lg"></i></a>&nbsp;
             {{answer}}
-            <span style="float:right"><a class="delete" ng-click="removeAnswer(question, answer)"><i class="fa fa-trash-o fa-lg text-danger"></i></a></span>
+            <a class="delete pull-right" ng-click="removeAnswer(question, answer)"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
           </li>
           <li class="list-group-item">
             <form ng-submit="addAnswer(question, newAnswer)">
