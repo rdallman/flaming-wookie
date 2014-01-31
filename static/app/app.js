@@ -11,6 +11,10 @@ dashboardApp.config(['$routeProvider',
                           templateUrl: '/templates/partials/quiz-form.html',
                           controller: 'QuizController'
                         }).
+                        when('/quiz/:id', {
+                          templateUrl: '/templates/partials/quiz.html',
+                          controller: 'QuizController'
+                        }).
                         otherwise({
                           redirectTo: '/main'
                         });

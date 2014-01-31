@@ -17,21 +17,13 @@ func handleQuizGet(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 	} else {
 		//fmt.Printf("%d", qID) //testing
-		rows, err := db.Query(`SELECT * FROM quiz WHERE qid=$1`, qID)
+		var info string
+		err := db.QueryRow(`SELECT info FROM quiz WHERE qid=$1`, qID).Scan(&info)
 		if err != nil {
 			fmt.Printf("%s", err)
 		} else {
-			for rows.Next() {
-				//fmt.Printf("here") //testing
-				var qid, cid int
-				var title, info string
-				err = rows.Scan(&qid, &title, &info, &cid)
-				if err != nil {
-					fmt.Printf("%s", err)
-				} else {
-					fmt.Printf("\nqid:%d \ttitle:%s \tinfo:%s \tcid:%d", qid, title, info, cid)
-				}
-			}
+			fmt.Fprintf(w, info)
+			
 		}
 	}
 }

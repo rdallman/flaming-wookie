@@ -1,0 +1,34 @@
+#slides {
+	overflow:hidden;
+	position:absolute;
+	-webkit-transition: all 0.5s;
+	top:4em;
+	bottom:0;
+	width:70%;
+	margin-right:auto;
+	margin-left:auto;
+	
+}
+
+.slide {
+	position:absolute;
+	top:0;
+	opacity:0;
+	-webkit-transform: translate3d(0, 100%, 0);
+	-webkit-transition: all 1.5s;
+	height: 100%;
+}
+
+.slide.active {
+	top:0;
+	opacity:1;
+	-webkit-transform: translate3d(0,0,0);
+}
+
+.active-btn{
+	display:block;
+}
+
+.inactive-btn{
+	display:none;
+}
