@@ -53,10 +53,26 @@ func handleQuizUpdate(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 		} else {
-			fmt.Println("\nupdated.")
+			fmt.Println("\nUpdated.")
 		}
 	}
 
+}
+
+func handleQuizDelete(w http.ResponseWriter, r *http.Request) {
+  vars := mux.Vars(r)
+  qid, err := strconv.Atoi(vars["id"])
+  if err != nil {
+    fmt.Println(err)
+  } else {
+    fmt.Println(qid)
+    _, err := db.Exec(`DELETE FROM quiz WHERE qid=$1`, qid)
+    if err != nil {
+      fmt.Println(err)
+    } else {
+      fmt.Println("\nDeleted.")
+    }
+  }
 }
 
 func handleQuizList(w http.ResponseWriter, r *http.Request) {
