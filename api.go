@@ -60,6 +60,8 @@ func handleQuizUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleQuizDelete(w http.ResponseWriter, r *http.Request) {
+  authenticate := auth(r)
+  if authentication != nil { 
   vars := mux.Vars(r)
   qid, err := strconv.Atoi(vars["id"])
   if err != nil {
@@ -73,6 +75,7 @@ func handleQuizDelete(w http.ResponseWriter, r *http.Request) {
       fmt.Println("\nDeleted.")
     }
   }
+} 
 }
 
 func handleQuizList(w http.ResponseWriter, r *http.Request) {
