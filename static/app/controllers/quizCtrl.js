@@ -1,16 +1,32 @@
 // quiz
-var quizApp = angular.module('quizControllers', []);
+var quizApp = angular.module('quizControllers', ['ngRoute']);
 
-quizApp.controller('QuizController', function ($scope, $http) {
-
+quizApp.controller('QuizController', function ($scope, $http, $route, $routeParams, $location) {
+  
+  $scope.current = -1;
+  $scope.id = -1;
 	$scope.quiz = {
 					title: "",
-					questions: []
+					questions: [],
+          grades: {}
 					};
-	
 
-	$scope.addQuestion = function(text) {
-		$scope.quiz.questions.push({questionText: text, answers: []});
+  if ($routeParams.id !== undefined) {	
+    $http({
+        method: 'GET',
+        url: '/dashboard/quiz/' + $routeParams.id
+    }).success(function(data) {
+        if (data !== undefined) {
+          $scope.quiz = data;
+          $scope.id = $routeParams.id
+        }
+    }).error(function(data) {
+        // handle error
+    });
+  }
+
+	$scope.addQuestion = function(textIn) {
+		$scope.quiz.questions.push({text: textIn, correct: -1, answers: []});
 		$scope.newQuestion = "";
 	}
 
@@ -23,6 +39,10 @@ quizApp.controller('QuizController', function ($scope, $http) {
 		//$scope.newAnswers[question] = "";
 
 	}
+
+  $scope.setCorrectAnswer = function(question, ansIndex) {
+    question.correct = ansIndex;
+  }
 
 	$scope.removeQuestion = function(question) {
 		$scope.quiz.questions.splice($scope.quiz.questions.indexOf(question), 1);
@@ -42,4 +62,31 @@ quizApp.controller('QuizController', function ($scope, $http) {
 			});
 	}
 
+  $scope.startQuiz = function() {
+    // post to server we're starting the quiz
+    $http({
+        method: 'PUT',
+        url: '/quiz/' + $scope.id + '/state?state=0'
+    });
+    // set current to start of questions
+    $scope.current = 0;
+  }
+
+  $scope.nextQuestion = function() {
+    // post to server that we're moving on...
+    $http({
+      method: 'PUT',
+      url: '/quiz/' + $scope.id + '/state?state=1'
+    });
+    $scope.current++;
+  }
+  
+  $scope.endQuiz = function() {
+    $http({
+      method: 'PUT',
+      url: '/quiz/' + $scope.id + '/state?state=-1'
+    });
+    // redirect to main
+    $location.path('/main');
+  }
 });

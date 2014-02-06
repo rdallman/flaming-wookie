@@ -1,0 +1,33 @@
+<link href="/static/slides.css" rel="stylesheet" media="screen">
+<div class="container" id="slides" ng-controller="QuizController">
+	
+	
+	<div ng-class="{active: current==-1}" class="slide">
+		<center><h1>{{ quiz.title }}</h1></center>
+		<br />
+		<br />
+		<center><p>QR Code Here</p></center>
+		<br />
+		<br />
+		<center><a class="btn btn-primary btn-lg" ng-click="startQuiz()">Start Quiz</a></center>
+	</div>
+	<div ng-repeat="question in quiz.questions" >
+		<div ng-class="{active: current==$index}" class="slide">
+			<h1>{{ question.text }}</h1>
+			<div ng-repeat="answer in question.answers">
+				<p>{{ answer }}</p>
+				<hr>
+			</div>
+			<center><a class="btn btn-primary btn-lg" 
+			ng-class="{true: 'active-btn', false: 'inactive-btn'}[!$last]" ng-click="nextQuestion()">Next Question</a></center>
+			<center><a class="btn btn-primary btn-lg" 
+			ng-class="{true: 'active-btn', false: 'inactive-btn'}[$last]" ng-click="endQuiz()">End Quiz</a></center>
+			
+		</div>
+		
+	</div>
+	
+	
+	
+
+</div>
