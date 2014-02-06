@@ -75,7 +75,9 @@ func handleQuizDelete(w http.ResponseWriter, r *http.Request) {
       fmt.Println("\nDeleted.")
     }
   }
-} 
+  } else { //this is bad, but we can decide this later...
+    fmt.Println("Error - you cannot delete a quiz")
+  }
 }
 
 func handleQuizList(w http.ResponseWriter, r *http.Request) {
