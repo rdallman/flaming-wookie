@@ -1,6 +1,5 @@
 package main
 
-
 // {
 //     "title": "Main Quiz",
 //     "questions": [
@@ -37,7 +36,7 @@ type Question struct {
 	Text    string   `json:text`
 	Answers []string `json:answers`
 	Correct int      `json:correct` //offset in []Answers
-	
+	_       []uint8  `json:$$haskKey`
 }
 
 type User struct {
