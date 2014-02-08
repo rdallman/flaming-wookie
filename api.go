@@ -9,7 +9,9 @@ import (
 	"strconv"
 )
 
-// add more later
+// handleQuizGet qets the quizID from the end of the given URL w
+// and writes the info json from the db back using r.
+// ((add more later))
 func handleQuizGet(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	qID, err := strconv.Atoi(vars["id"])
@@ -23,12 +25,13 @@ func handleQuizGet(w http.ResponseWriter, r *http.Request) {
 			fmt.Printf("%s", err)
 		} else {
 			fmt.Fprintf(w, info)
-			
 		}
 	}
 }
 
-// just an idea, not sure if we actually need this
+// handleQuizUpdate qets the quizID from the end of the given URL w,
+// gets the form data, and updates the quiz in the db.
+// ((just an idea, not sure if we actually need this))
 func handleQuizUpdate(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("HERE")
 	vars := mux.Vars(r)
@@ -48,9 +51,10 @@ func handleQuizUpdate(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("\nupdated.")
 		}
 	}
-
 }
 
+// handleQuizList returns a json of all quiz ids and titles
+// using r.
 func handleQuizList(w http.ResponseWriter, r *http.Request) {
 	//title and id, return JSON
 	rows, err := db.Query(`SELECT qid, title FROM quiz`)

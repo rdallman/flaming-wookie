@@ -1,6 +1,6 @@
 
   html {
-    background: url(/static/perfect.jpg) no-repeat center center fixed;
+    background: url(/static/perfect-op.jpg) no-repeat center center fixed;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
@@ -14,10 +14,14 @@
   }
 
   .container {
-    width: auto;
+    text-align: center;
+    width: 75%;
     font-size: 16px;
     font-family: "Oswald";
     font-weight: 300;
+    background-color: #ffffff;
+    opacity: 0.6;
+    border: 1px solid black;
   }
 
   .navbar {
@@ -40,9 +44,18 @@
   }
 
   h1 {
-    padding-top: 40px;
+    text-align: center;
+    padding-top: 30px;
+    padding-bottom: 30px;
     font-family: "Oswald";
-    font-weight: 300;
+    font-weight: bold;
+    font-size: 60;
+  }
+
+  h2 {
+    font-weight: normal;
+    font-size: 32;
+    font-family: "Oswald";
   }
 
   #wrap {

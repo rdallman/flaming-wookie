@@ -10,6 +10,9 @@ import (
 	"time"
 )
 
+// login gets the user' email and password from the form.
+// If valid user, createCookie(w, inputEmail) is called, and 
+// the user is redirected to their dashboard page.
 func login(w http.ResponseWriter, r *http.Request) {
 	inputEmail, inputPass := r.FormValue("email"), r.FormValue("password")
 
@@ -29,10 +32,14 @@ func login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	default:
 		createCookie(w, inputEmail)
-		http.Redirect(w, r, "/", 302)
+		http.Redirect(w, r, "/dashboard/#/main", 302)
 	}
 }
 
+// register gets the user's email and password from the form.
+// If the fields are valid and user does not already exist, the 
+// user is added to the database, createCookie(w, inputEmail) is 
+// called, and the user is redirected to their dashboard page.
 func register(w http.ResponseWriter, r *http.Request) {
 	email, pass1, pass2 := r.FormValue("email"), r.FormValue("password"), r.FormValue("password confirm")
 
@@ -63,12 +70,25 @@ func register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	//(login) create cookie and redirect to homepage
+	//(login) create cookie and redirect to dashboard
 	createCookie(w, email)
-	http.Redirect(w, r, "/", 302)
+	http.Redirect(w, r, "/dashboard/#/main", 302)
 }
 
-//deletes cookie and redirects to homepage
+// createCookie creates and sets a cookie for the user.
+func createCookie(w http.ResponseWriter, email string) {
+	expire := time.Now().AddDate(0, 1, 0)
+	cookie := &http.Cookie{
+		Name:    "logged-in",
+		Value:   email,
+		Expires: expire,
+		Path:    "/",
+	}
+	http.SetCookie(w, cookie)
+	//TODO add cookie to db
+}
+
+// logout deletes cookie and redirects to homepage.
 func logout(w http.ResponseWriter, r *http.Request) {
 	expire := time.Now()
 	cookie := &http.Cookie{
@@ -83,30 +103,17 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	//TODO (when we add cookies to db) delete cookie from db
 }
 
-//creates and sets cookie for user
-func createCookie(w http.ResponseWriter, email string) {
-	expire := time.Now().AddDate(0, 1, 0)
-	cookie := &http.Cookie{
-		Name:    "logged-in",
-		Value:   email,
-		Expires: expire,
-		Path:    "/",
-	}
-	http.SetCookie(w, cookie)
-	//TODO add cookie to db
-}
-
-//checks for cookie
-// 	if cookie -> returns the user's uid and email
-//	if no cookie (or invalid) -> return -1 and ""
+// auth checks for a user's cookie. If a valid cookie exists,
+// a User struct is returned containing the user's uid and email.
+// If no valid cookie exists, nil is returned.
 func auth(r *http.Request) *User {
 	cookie, err := r.Cookie("logged-in")
 	if err != nil { // no cookie
 		return nil
 	}
 
-	var uid int
 	//TODO make this more secure... easily spoofed
+	var uid int
 	err = db.QueryRow(`SELECT uid FROM users WHERE email=$1`, cookie.Value).Scan(&uid)
 	if err != nil { // invalid user
 		return nil
