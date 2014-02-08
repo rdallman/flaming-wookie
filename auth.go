@@ -43,14 +43,14 @@ func register(w http.ResponseWriter, r *http.Request) {
 	}
 	//check to see if email already exists in db
 	var id int
-	er := db.QueryRow(`SELECT uid FROM users WHERE email=$1`, email).Scan(&id)
-	if er != sql.ErrNoRows {
+	err := db.QueryRow(`SELECT uid FROM users WHERE email=$1`, email).Scan(&id)
+	if id > 0 {
 		fmt.Fprintf(w, "User already exists")
 		return //do not add to db
 	}
 
 	salt := make([]byte, 32)
-	_, err := rand.Read(salt)
+	_, err = rand.Read(salt)
 	//saltstr := string(salt[:])
 
 	// create secure, salted hash

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
-	"database/sql"
 	"net/http"
 	"strconv"
 )
@@ -16,14 +15,14 @@ import (
 //
 //TODO auth student
 func handleAnswer(w http.ResponseWriter, r *http.Request) {
-	_ = sql.ErrNoRows
 	vars := mux.Vars(r)
 	qid, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	//TODO Basic Auth is base64 encoded and gross... when you're feeling extra bored
-	sid, err := strconv.Atoi(r.Header.Get("Authorization"))
+	sid := r.Header.Get("Authorization")
+	sid = sid[:len(sid)-1] //slice off last
 	fmt.Fprintf(w, "%d %v", sid, err)
 	a, err := strconv.Atoi(r.FormValue("answer"))
 	//TODO if session doesn't exist, reply with 401? something that indicates not in progress?
@@ -75,13 +74,13 @@ func (r Response) String() string {
 func quizSesh(s Session) {
 	state := 0
 	//[]map[sid]answer
-	answers := make([]map[int]int, 0)
+	answers := make([]map[string]int, 0)
 	for {
 		select {
 		case ur := <-s.replies:
 			fmt.Println(ur.sid, ur.ans)
 			if state >= len(answers) {
-				answers = append(answers, make(map[int]int))
+				answers = append(answers, make(map[string]int))
 			}
 			answers[state][ur.sid] = ur.ans
 		case state = <-s.state:
@@ -95,17 +94,16 @@ func quizSesh(s Session) {
 }
 
 //map[sid]answer
-func quit(qid int, qa []map[int]int) {
+func quit(qid int, qa []map[string]int) {
 	var quiz Quiz
 	err := db.QueryRow(`SELECT info FROM quiz WHERE qid = $1`, qid).Scan(&quiz)
 	if err != nil {
 		//TODO uh this is really bad at this point
-		fmt.Println("cannot find quiz", err)
-
+		fmt.Println("cannot find quiz", err, qid)
 	}
 
 	//map[sid]#correct
-	correct := make(map[int]int)
+	correct := make(map[string]int)
 
 	for i, q := range qa {
 		//TODO could insert qa into Quiz here for further statistics
@@ -116,7 +114,8 @@ func quit(qid int, qa []map[int]int) {
 		}
 	}
 
-	grades := make(map[int]int)
+	//map[sid]%
+	grades := make(map[string]int)
 	for s, c := range correct {
 		grades[s] = c / len(quiz.Questions)
 	}
