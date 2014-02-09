@@ -27,15 +27,15 @@ package main
 // }
 
 type Quiz struct {
-	Title     string         `json:title`
-	Questions []Question     `json:questions`
-	Grades    map[string]int `json:grades` //map[sid]0-100
+	Title     string         `json:"title"`
+	Questions []Question     `json:"questions"`
+	Grades    map[string]int `json:"grades"` //map[sid]0-100
 }
 
 type Question struct {
-	Text    string   `json:text`
-	Answers []string `json:answers`
-	Correct int      `json:correct` //offset in []Answers
+	Text    string   `json:"text"`
+	Answers []string `json:"answers"`
+	Correct int      `json:"correct"` //offset in []Answers
 }
 
 type User struct {

@@ -16,6 +16,7 @@ import (
 //TODO auth student
 func handleAnswer(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
+	fmt.Println(r.Body)
 	qid, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -79,9 +80,6 @@ func quizSesh(s Session) {
 		select {
 		case ur := <-s.replies:
 			fmt.Println(ur.sid, ur.ans)
-			if state >= len(answers) {
-				answers = append(answers, make(map[string]int))
-			}
 			answers[state][ur.sid] = ur.ans
 		case state = <-s.state:
 			fmt.Println(state)
@@ -89,27 +87,42 @@ func quizSesh(s Session) {
 				go quit(s.qid, answers)
 				break
 			}
+			if state >= len(answers) {
+				answers = append(answers, make(map[string]int))
+			}
 		}
 	}
 }
 
 //map[sid]answer
 func quit(qid int, qa []map[string]int) {
-	var quiz Quiz
-	err := db.QueryRow(`SELECT info FROM quiz WHERE qid = $1`, qid).Scan(&quiz)
+	//var quiz Quiz
+	var qstring string
+	err := db.QueryRow(`SELECT info FROM quiz WHERE qid = $1`, qid).Scan(&qstring)
 	if err != nil {
 		//TODO uh this is really bad at this point
 		fmt.Println("cannot find quiz", err, qid)
 	}
 
+	var quiz Quiz
+	err = json.Unmarshal([]byte(qstring), &quiz)
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	//map[sid]#correct
 	correct := make(map[string]int)
 
-	for i, q := range qa {
-		//TODO could insert qa into Quiz here for further statistics
+	for i, q := range qa { //TODO could insert qa into Quiz for further statistics
+		fmt.Println(i)
 		for s, ans := range q {
+			fmt.Println(s)
 			if ans == quiz.Questions[i].Correct {
 				correct[s]++
+			} else {
+				if _, ok := correct[s]; !ok {
+					correct[s] = 0
+				}
 			}
 		}
 	}
@@ -121,7 +134,14 @@ func quit(qid int, qa []map[string]int) {
 	}
 
 	quiz.Grades = grades
-	_, err = db.Exec(`UPDATE quiz SET info = $1 WHERE qid = $2`, quiz, qid)
+	q, err := json.Marshal(quiz)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(q, string(q))
+
+	_, err = db.Exec(`UPDATE quiz SET info = $1 WHERE qid = $2`, string(q), qid)
 	if err != nil {
 		//TODO also really bad
 		fmt.Println("cannot save grades", err)
