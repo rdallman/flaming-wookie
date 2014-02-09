@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -38,6 +39,7 @@ func writeSuccess(w http.ResponseWriter) {
 //
 //TODO auth student
 func handleAnswer(w http.ResponseWriter, r *http.Request) {
+	_ = sql.ErrNoRows
 	vars := mux.Vars(r)
 	decoder := json.NewDecoder(r.Body)
 	t := struct {
@@ -127,7 +129,7 @@ func quit(qid int, qa []map[string]int) {
 	var quiz Quiz
 	err = json.Unmarshal([]byte(qstring), &quiz)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("cannot find quiz", err)
 	}
 
 	//map[sid]#correct

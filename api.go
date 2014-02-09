@@ -48,13 +48,34 @@ func handleQuizUpdate(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 		} else {
-			fmt.Println("\nupdated.")
+			fmt.Println("\nUpdated.")
 		}
 	}
 }
 
 // handleQuizList returns a json of all quiz ids and titles
 // using r.
+func handleQuizDelete(w http.ResponseWriter, r *http.Request) {
+	auth := auth(r)
+	if auth != nil {
+		vars := mux.Vars(r)
+		qid, err := strconv.Atoi(vars["id"])
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println(qid)
+			_, err := db.Exec(`DELETE FROM quiz WHERE qid=$1`, qid)
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				fmt.Println("\nDeleted.")
+			}
+		}
+	} else { //this is bad, but we can decide this later...
+		fmt.Println("Error - you cannot delete a quiz")
+	}
+}
+
 func handleQuizList(w http.ResponseWriter, r *http.Request) {
 	//title and id, return JSON
 	rows, err := db.Query(`SELECT qid, title FROM quiz`)

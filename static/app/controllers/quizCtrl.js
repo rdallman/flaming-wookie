@@ -28,7 +28,6 @@ quizApp.controller('QuizController', function ($scope, $http, $route, $routePara
     });
   }
 
-
 	$scope.addQuestion = function(textIn) {
 		$scope.quiz.questions.push({text: textIn, correct: -1, answers: []});
 		$scope.newQuestion = "";
