@@ -22,6 +22,8 @@ func writeSuccess(w http.ResponseWriter) {
 	fmt.Fprint(w, Response{"success": true})
 }
 
+// handleAnswer qets the quizID from the given URL w,
+// gets an answer from a client, and stores it in a map.
 //PUT/POST /quiz/{id}/answer
 //  body (json):
 //    {
