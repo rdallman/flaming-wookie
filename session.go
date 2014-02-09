@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -9,6 +10,8 @@ import (
 	"strconv"
 )
 
+// handleAnswer qets the quizID from the given URL w,
+// gets an answer from a client, and stores it in a map.
 //PUT/POST /quiz/{id}/answer
 //  body:
 //    answer : string

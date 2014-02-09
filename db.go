@@ -6,6 +6,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// init opens a connection to the database.
 func init() {
 	var err error
 	db, err = sql.Open("postgres", "postgres://wookie:password@absker.com/wookie?sslmode=disable")
