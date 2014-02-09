@@ -9,33 +9,56 @@ import (
 	"strconv"
 )
 
+//checks for err, replies with false success reply
+func writeErr(err error, w http.ResponseWriter) {
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, Response{"success": false})
+	}
+}
+
+func writeSuccess(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, Response{"success": true})
+}
+
 //PUT/POST /quiz/{id}/answer
-//  body:
-//    answer : string
+//  body (json):
+//    {
+//      "Id"      : string
+//      "Answer"  : int
+//    }
+//
+//  reply (json):
+//    {
+//      "Success": bool
+//    }
 //
 //TODO auth student
 func handleAnswer(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	fmt.Println(r.Body)
+	decoder := json.NewDecoder(r.Body)
+	t := struct {
+		Answer int
+		Id     string
+	}{}
+	err := decoder.Decode(&t)
+	writeErr(err, w)
+
 	qid, err := strconv.Atoi(vars["id"])
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	//TODO Basic Auth is base64 encoded and gross... when you're feeling extra bored
-	sid := r.Header.Get("Authorization")
-	sid = sid[:len(sid)-1] //slice off last
-	fmt.Fprintf(w, "%d %v", sid, err)
-	a, err := strconv.Atoi(r.FormValue("answer"))
+	writeErr(err, w)
+
 	//TODO if session doesn't exist, reply with 401? something that indicates not in progress?
-	qzSesh[qid].replies <- UserReply{sid, a}
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprint(w, Response{true})
+	qzSesh[qid].replies <- UserReply{t.Id, t.Answer}
+	writeSuccess(w)
 }
 
 // must have cookie
 //PUT /quiz/{id}/state
 //  body:
 //    state : int
+//
+// TODO json me, authenticate cookie
 func changeState(w http.ResponseWriter, r *http.Request) {
 	//auth()
 	vars := mux.Vars(r)
@@ -54,14 +77,10 @@ func changeState(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println(state)
 	qzSesh[qid].state <- state
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprint(w, Response{true})
-	//TODO reply w/ 200
+	writeSuccess(w)
 }
 
-type Response struct {
-	Success bool `json:success`
-}
+type Response map[string]interface{}
 
 func (r Response) String() string {
 	b, err := json.Marshal(r)
@@ -74,7 +93,7 @@ func (r Response) String() string {
 //send 0
 func quizSesh(s Session) {
 	state := 0
-	//[]map[sid]answer
+	//[]map[sid]answer //TODO fix this size? we know how many ?'s there are...
 	answers := make([]map[string]int, 0)
 	for {
 		select {
@@ -87,7 +106,7 @@ func quizSesh(s Session) {
 				go quit(s.qid, answers)
 				break
 			}
-			if state >= len(answers) {
+			if state >= len(answers) { //only add to []answers as needed ~Dicey
 				answers = append(answers, make(map[string]int))
 			}
 		}
@@ -96,7 +115,6 @@ func quizSesh(s Session) {
 
 //map[sid]answer
 func quit(qid int, qa []map[string]int) {
-	//var quiz Quiz
 	var qstring string
 	err := db.QueryRow(`SELECT info FROM quiz WHERE qid = $1`, qid).Scan(&qstring)
 	if err != nil {
@@ -113,10 +131,11 @@ func quit(qid int, qa []map[string]int) {
 	//map[sid]#correct
 	correct := make(map[string]int)
 
-	for i, q := range qa { //TODO could insert qa into Quiz for further statistics
-		fmt.Println(i)
-		for s, ans := range q {
-			fmt.Println(s)
+	//add number of correct
+	// for each question
+	//   for each answer
+	for i, question := range qa { //TODO could insert qa into Quiz for further statistics
+		for s, ans := range question {
 			if ans == quiz.Questions[i].Correct {
 				correct[s]++
 			} else {
@@ -127,10 +146,10 @@ func quit(qid int, qa []map[string]int) {
 		}
 	}
 
-	//map[sid]%
+	//map[sid]0-100
 	grades := make(map[string]int)
 	for s, c := range correct {
-		grades[s] = c / len(quiz.Questions)
+		grades[s] = int(float64(c) / float64(len(quiz.Questions)) * 100)
 	}
 
 	quiz.Grades = grades
@@ -139,7 +158,7 @@ func quit(qid int, qa []map[string]int) {
 		fmt.Println(err)
 	}
 
-	fmt.Println(q, string(q))
+	fmt.Println(string(q))
 
 	_, err = db.Exec(`UPDATE quiz SET info = $1 WHERE qid = $2`, string(q), qid)
 	if err != nil {
@@ -147,5 +166,6 @@ func quit(qid int, qa []map[string]int) {
 		fmt.Println("cannot save grades", err)
 	}
 
+	//remove session
 	delete(qzSesh, qid)
 }
