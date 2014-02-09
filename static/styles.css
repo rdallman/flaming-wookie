@@ -1,68 +1,113 @@
 
-  html {
-    background: url(/static/perfect.jpg) no-repeat center center fixed;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    background-size: cover;
-    height: 100%;
-  }
+html {
+}
 
-  body {
-    height: 100%;
-    background: transparent;
-  }
+body {
+  height: 100%;
+  background: url(/static/perfect.jpg) no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  height: 100%;
+}
 
-  .container {
-    width: auto;
-    font-size: 16px;
-    font-family: "Oswald";
-    font-weight: 300;
-  }
+.below {
+  height: 100%;
+  width: 100%;
+  background-color: #000;
+  color: #ff6;
+  overflow: hidden;
+  font-family: "Droid Sans", arial, verdana, sans-serif;
+  font-weight: 700;
+}
 
-  .navbar {
-    padding-right: 20px;
-    background: rgba(0,0,0,0);
-    border: 0;
-  }
+.container {
+  width: auto;
+  font-size: 16px;
+  font-family: "Oswald";
+  font-weight: 300;
+}
 
-  .vertical-offset-100 {
-    padding-top: 100px;
-  }
+.navbar {
+  padding-right: 20px;
+  background: rgba(0,0,0,0);
+  border: 0;
+}
 
-  .panel {
-    background-color: rgba(255, 255, 255, 0.9);
-  }
+.vertical-offset-100 {
+  padding-top: 100px;
+}
 
-  .checkbox {
-    color: black;
-    font-size: 16px;
-  }
+.panel {
+  background-color: rgba(255, 255, 255, 0.9);
+}
 
-  h1 {
-    padding-top: 40px;
-    font-family: "Oswald";
-    font-weight: 300;
-  }
+.checkbox {
+  color: black;
+  font-size: 16px;
+}
 
-  #wrap {
-    min-height: 100%;
-    height: auto !important;
-    height: 100%;
-    margin: 0 auto -120px;
-  }
+h1 {
+  padding-top: 40px;
+  font-family: "Oswald";
+  color: #FFF;
+  font-weight: 300;
+}
 
-  #push,
+.thefoot {
+  font-size: 32px;
+}
+
+.arrow {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  margin-left:-20px;
+  width: 40px;
+  height: 40px;
+  background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNi4wLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IiB3aWR0aD0iNTEycHgiIGhlaWdodD0iNTEycHgiIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDAgMCA1MTIgNTEyIiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxwYXRoIGZpbGw9IiNGRkZGRkYiIGQ9Ik0yOTMuNzUxLDQ1NS44NjhjLTIwLjE4MSwyMC4xNzktNTMuMTY1LDE5LjkxMy03My42NzMtMC41OTVsMCwwYy0yMC41MDgtMjAuNTA4LTIwLjc3My01My40OTMtMC41OTQtNzMuNjcyICBsMTg5Ljk5OS0xOTBjMjAuMTc4LTIwLjE3OCw1My4xNjQtMTkuOTEzLDczLjY3MiwwLjU5NWwwLDBjMjAuNTA4LDIwLjUwOSwyMC43NzIsNTMuNDkyLDAuNTk1LDczLjY3MUwyOTMuNzUxLDQ1NS44Njh6Ii8+DQo8cGF0aCBmaWxsPSIjRkZGRkZGIiBkPSJNMjIwLjI0OSw0NTUuODY4YzIwLjE4LDIwLjE3OSw1My4xNjQsMTkuOTEzLDczLjY3Mi0wLjU5NWwwLDBjMjAuNTA5LTIwLjUwOCwyMC43NzQtNTMuNDkzLDAuNTk2LTczLjY3MiAgbC0xOTAtMTkwYy0yMC4xNzgtMjAuMTc4LTUzLjE2NC0xOS45MTMtNzMuNjcxLDAuNTk1bDAsMGMtMjAuNTA4LDIwLjUwOS0yMC43NzIsNTMuNDkyLTAuNTk1LDczLjY3MUwyMjAuMjQ5LDQ1NS44Njh6Ii8+DQo8L3N2Zz4=);
+  background-size: contain;
+}
+
+#wrap {
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+  margin: 0 auto -120px;
+}
+
+#push,
+#footer {
+  height: 120px;
+  color: white;
+}
+
+@media (max-width:767px) {
   #footer {
-    height: 120px;
-    color: white;
+    margin-left: -20px;
+    margin-right: -20px;
+    padding-left: 20px;
+    padding-right: 20px;
   }
+}
 
-  @media (max-width:767px) {
-    #footer {
-      margin-left: -20px;
-      margin-right: -20px;
-      padding-left: 20px;
-      padding-right: 20px;
-    }
-  }
+#titlecontent {
+  width: 18em;
+  height: 50em;
+  bottom: 0;
+  left: 50%;
+  margin-left: -9em;
+  font-size: 350%;
+  text-align: justify;
+ 	-webkit-transform-origin: 50% 100%;
+	-moz-transform-origin: 50% 100%;
+	-ms-transform-origin: 50% 100%;
+	-o-transform-origin: 50% 100%;
+	transform-origin: 50% 100%;
+	-webkit-transform: perspective(300px) rotateX(25deg);
+	-moz-transform: perspective(300px) rotateX(25deg);
+	-ms-transform: perspective(300px) rotateX(25deg);
+	-o-transform: perspective(300px) rotateX(25deg);
+	transform: perspective(300px) rotateX(25deg); overflow: hidden;
+}
