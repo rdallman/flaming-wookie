@@ -14,7 +14,7 @@ import (
 func writeErr(err error, w http.ResponseWriter) {
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, Response{"success": false})
+		fmt.Fprint(w, Response{"success": false, "message": err.Error()})
 	}
 }
 
