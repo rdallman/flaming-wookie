@@ -17,6 +17,11 @@
 	-webkit-transform: translate3d(0, 100%, 0);
 	-webkit-transition: all 1.5s;
 	height: 100%;
+	font-size: 18pt;
+}
+
+.slide hr {
+	border: 1 !important;
 }
 
 .slide.active {

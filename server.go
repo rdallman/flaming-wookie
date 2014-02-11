@@ -31,6 +31,12 @@ func handlePage(name string) func(http.ResponseWriter, *http.Request) {
 	}
 }
 
+func serveFile(url string, filename string) {
+	http.HandleFunc(url, func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, filename)
+	})
+}
+
 func main() {
 	r := mux.NewRouter()
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
@@ -58,5 +64,6 @@ func main() {
 	r.HandleFunc("/quiz/add", handleQuizCreate).Methods("POST")
 
 	http.Handle("/", r)
+	serveFile("/favicon.ico", "./favicon.ico")
 	http.ListenAndServe(":8080", nil)
 }

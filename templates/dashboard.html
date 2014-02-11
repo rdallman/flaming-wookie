@@ -7,27 +7,40 @@
   <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet" />
   <link href="http://fonts.googleapis.com/css?family=Oswald:300,400,700" rel="stylesheet" />
   <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet" />
-  <link href="/static/dashboard.css" rel="stylesheet" media="screen">
+  <!--<link href="/static/dashboard.css" rel="stylesheet" media="screen">-->
+  <link href="/static/application.min.css" rel="stylesheet" media="screen">
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular-route.js"></script>
-  
+  <style>
+    body {
+      background: rgb(94, 136, 159);
+    }
+  </style>
 </head>
 <body>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="navbar-header">
-        <span class="navbar-brand">Wookiee</span>
-      </div>
-      <ul class="nav navbar-nav">
-        <li><a href="#/">Home</a>
-      </ul>
-      <ul class="nav navbar-nav navbar-right" style="padding-right:15px;">
-        <li><a href="/logmeout">Logout</a></li>
+    <div class="logo">
+      <a href="/"><h4>Wookiee</h4></a>
+    </div>
+    <nav id="sidebar" class="sidebar nav-collapse collapse">
+      <ul class="side-nav">
+        <li class="panel"><a href="#/main">Dashboard <i class="fa fa-home"></i></a></li>
+        <li class="panel"><a href="">Quizzes <i class="fa fa-list-ol"></i></a></li>
       </ul>
     </nav>
-  	<div class="container">
-  		
-      <div ng-view></div>
-  	</div>
+
+    <div class="wrap">
+      <header class="page-header">
+        <div class="navbar">
+          <ul class="nav navbar-nav navbar-right pull-right">
+            <li><<<.Email>>></li>
+          </ul>
+        </div>
+      </header>
+      <div class="container content" ng-view>
+
+        
+      </div>
+    </div>
 
     <script src="/static/app/app.js"></script>
     <script src="/static/app/controllers/quizCtrl.js"></script>
