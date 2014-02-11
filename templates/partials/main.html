@@ -1,16 +1,23 @@
 <div ng-controller="MainController">
-	<h1>Dashboard</h1>
-	<a href="#/quiz-create" class="btn btn-primary">Create Quiz!</a>
-	<br />
-	<br />
+	
+
 	<div class="row">
-		<div class="col-md-6">
-			<ul class="list-group">
-				<li class="list-group-item" ng-repeat="quiz in quizzes">
-					<a href="#/quiz/{{ quiz.id }}">{{ quiz.Title }}</a>
-				</li>
-			</ul>
+		<div class="col-md-8">
+			<section class="widget">
+				<header>
+					<h4>Quizzes</h4>
+				</header>
+				<div class="body">
+					<a href="#/quiz-create" class="btn btn-primary">Create Quiz!</a>
+					<ul class="list-group">
+						<li class="list-group-item" ng-repeat="quiz in quizzes">
+							<a style="color:white;" href="#/quiz/{{ quiz.id }}">{{ quiz.Title }}</a>
+						</li>
+					</ul>
+				</div>
+			</section>
 		</div>
 	</div>
-	{{ quizzes }}
+	
+	</div>
 </div>
