@@ -81,9 +81,8 @@ quizApp.controller('QuizController', function ($scope, $http, $route, $routePara
     // post to server that we're moving on...
     $http({
       method: 'PUT',
-      url: '/quiz/' + $scope.id + '/state?state=1'
+      url: '/quiz/' + $scope.id + '/state?state=' + ++$scope.current
     });
-    $scope.current++;
   }
   
   $scope.endQuiz = function() {

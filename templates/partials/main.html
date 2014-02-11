@@ -5,10 +5,10 @@
 		<div class="col-md-8">
 			<section class="widget">
 				<header>
-					<h4>Quizzes</h4>
+              <h4 style="float:left;font-size:24px;">Quizzes</h4>
+              <a style="float:right"href="#/quiz-create" class="btn btn-large btn-primary pull-right">Create Quiz!</a>
 				</header>
-				<div class="body">
-					<a href="#/quiz-create" class="btn btn-primary">Create Quiz!</a>
+				<div style="margin-top: 40px;"class="body">
 					<ul class="list-group">
 						<li class="list-group-item" ng-repeat="quiz in quizzes">
 							<a style="color:white;" href="#/quiz/{{ quiz.id }}">{{ quiz.Title }}</a>

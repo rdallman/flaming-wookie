@@ -30,6 +30,10 @@ body {
   font-weight: 300;
 }
 
+.header {
+  padding-top: 200px;
+}
+
 .navbar {
   padding-right: 20px;
   background: rgba(0,0,0,0);
@@ -50,8 +54,8 @@ body {
 }
 
 h1 {
-  padding-top: 40px;
   font-family: "Oswald";
+  font-size: 60px;
   color: #FFF;
   font-weight: 300;
 }
