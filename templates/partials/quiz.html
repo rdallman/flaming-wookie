@@ -15,8 +15,8 @@
 		<div ng-class="{active: current==$index}" class="slide">
 			<h1>{{ question.text }}</h1>
 			<div ng-repeat="answer in question.answers">
-				<p>{{ answer }}</p>
-				<hr>
+				<p>{{ $index | abc }} - {{ answer }}</p>
+				
 			</div>
 			<center><button class="btn btn-primary btn-lg" 
 			ng-class="{true: 'active-btn', false: 'inactive-btn'}[!$last]" ng-click="nextQuestion()">Next Question</button></center>
