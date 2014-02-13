@@ -5,20 +5,27 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"fmt"
+	"github.com/gorilla/securecookie"
 	_ "github.com/lib/pq"
 	"net/http"
+	"strconv"
 	"time"
 )
 
+var hashKey = []byte("notthesecretyourelookingfor")
+var blockKey = []byte("chewbacachewbaca")
+var s = securecookie.New(hashKey, blockKey)
+
 // login gets the user' email and password from the form.
-// If valid user, createCookie(w, inputEmail) is called, and 
+// If valid user, createCookie(w, inputEmail) is called, and
 // the user is redirected to their dashboard page.
 func login(w http.ResponseWriter, r *http.Request) {
 	inputEmail, inputPass := r.FormValue("email"), r.FormValue("password")
 
 	//dbpw is the salted sha256 hash we stored as password
 	var salt, dbpw string
-	err := db.QueryRow(`SELECT salt, password FROM users WHERE email=$1`, inputEmail).Scan(&salt, &dbpw)
+	var uid int
+	err := db.QueryRow(`SELECT salt, password, uid  FROM users WHERE email=$1`, inputEmail).Scan(&salt, &dbpw, &uid)
 
 	//salt input password, hash and compare to database salted hash
 	hash := sha256.Sum256(append([]byte(inputPass), salt...))
@@ -31,14 +38,18 @@ func login(w http.ResponseWriter, r *http.Request) {
 	case err != nil:
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	default:
-		createCookie(w, inputEmail)
-		http.Redirect(w, r, "/dashboard/#/main", 302)
+		err = createCookie(w, uid, inputEmail)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		} else {
+			http.Redirect(w, r, "/dashboard/#/main", 302)
+		}
 	}
 }
 
 // register gets the user's email and password from the form.
-// If the fields are valid and user does not already exist, the 
-// user is added to the database, createCookie(w, inputEmail) is 
+// If the fields are valid and user does not already exist, the
+// user is added to the database, createCookie(w, inputEmail) is
 // called, and the user is redirected to their dashboard page.
 func register(w http.ResponseWriter, r *http.Request) {
 	email, pass1, pass2 := r.FormValue("email"), r.FormValue("password"), r.FormValue("password confirm")
@@ -64,43 +75,48 @@ func register(w http.ResponseWriter, r *http.Request) {
 	hash := sha256.Sum256(append([]byte(pass1), salt...))
 	phash := string(hash[:])
 
-	_, err = db.Exec(`INSERT INTO users (email, password, salt)
-    VALUES($1, $2, $3)`, email, phash, salt)
+	var uid int
+	err = db.QueryRow(`INSERT INTO users (email, password, salt)
+    VALUES($1, $2, $3) RETURNING uid`, email, phash, salt).Scan(&uid)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	//(login) create cookie and redirect to dashboard
-	createCookie(w, email)
-	http.Redirect(w, r, "/dashboard/#/main", 302)
+	http.Redirect(w, r, "/login", 302)
+
 }
 
 // createCookie creates and sets a cookie for the user.
-func createCookie(w http.ResponseWriter, email string) {
-	expire := time.Now().AddDate(0, 1, 0)
+func createCookie(w http.ResponseWriter, uid int, email string) error {
+	values := make(map[string]string)
+	values["uid"] = strconv.Itoa(uid)
+	values["email"] = email
+	encoded, err := s.Encode("logged-in", values)
+	if err != nil {
+		return err
+	}
 	cookie := &http.Cookie{
 		Name:    "logged-in",
-		Value:   email,
-		Expires: expire,
+		Value:   encoded,
 		Path:    "/",
+		Expires: time.Now().AddDate(20, 0, 0),
 	}
+
 	http.SetCookie(w, cookie)
-	//TODO add cookie to db
+	return nil
 }
 
 // logout deletes cookie and redirects to homepage.
 func logout(w http.ResponseWriter, r *http.Request) {
-	expire := time.Now()
-	cookie := &http.Cookie{
-		Name:    "logged-in",
-		Value:   "",
-		Expires: expire,
-		Path:    "/",
-		MaxAge:  -1,
+	cookie, err := r.Cookie("logged-in")
+	if err != nil {
+		return
 	}
+	cookie.Expires = time.Now()
 	http.SetCookie(w, cookie)
 	http.Redirect(w, r, "/", 302)
-	//TODO (when we add cookies to db) delete cookie from db
+
 }
 
 // auth checks for a user's cookie. If a valid cookie exists,
@@ -111,12 +127,17 @@ func auth(r *http.Request) *User {
 	if err != nil { // no cookie
 		return nil
 	}
-
-	//TODO make this more secure... easily spoofed
-	var uid int
-	err = db.QueryRow(`SELECT uid FROM users WHERE email=$1`, cookie.Value).Scan(&uid)
+	values := make(map[string]string)
+	err = s.Decode("logged-in", cookie.Value, &values)
+	fmt.Println("cookie: ", values["uid"], cookie.Value)
 	if err != nil { // invalid user
 		return nil
 	}
-	return &User{uid, cookie.Value} // valid user
+
+	id, err := strconv.Atoi(values["uid"])
+	if err != nil {
+		return nil
+	}
+
+	return &User{id, values["email"]} // valid user
 }
