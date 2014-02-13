@@ -29,7 +29,8 @@ import (
 //
 // on creation just make a blank map for grades
 
-// inserts a quiz from an AJAX POST request
+// handleQuizCreate creates a quiz from an AJAX POST request
+// and calls insertQuiz(quizJson.Title, p).
 func handleQuizCreate(w http.ResponseWriter, r *http.Request) {
 	// grab body of request (should be the json of the quiz)
 	var quizJson Quiz
@@ -47,9 +48,9 @@ func handleQuizCreate(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, err.Error()) // remove eventually, needed for debugging
 		}
 	}
-
 }
 
+// insertQuiz insterts a quiz into the db.
 func insertQuiz(title string, quizData []byte) error {
 	_, err := db.Exec(`INSERT INTO quiz (title, info, cid) 
 		VALUES($1, $2, $3)`, title, quizData, 1)
@@ -57,5 +58,4 @@ func insertQuiz(title string, quizData []byte) error {
 		return err
 	}
 	return nil
-
 }

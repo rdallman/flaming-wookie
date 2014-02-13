@@ -1,10 +1,13 @@
-// quiz
+// quiz controller for 
 var quizApp = angular.module('quizControllers', ['ngRoute']);
 
 quizApp.controller('QuizController', function ($scope, $http, $route, $routeParams, $location) {
   
+  // used for traversing quiz in html
   $scope.current = -1;
   $scope.id = -1;
+
+  // main model for quiz
 	$scope.quiz = {
 					title: "",
 					questions: [],
@@ -57,11 +60,13 @@ quizApp.controller('QuizController', function ($scope, $http, $route, $routePara
 		$http({
 				method: 'POST', 
 				url: '/quiz/add', 
-				data: JSON.stringify($scope.quiz),
+				data: angular.toJson($scope.quiz),
 				headers: {'Content-Type': 'application/json'}
-			});
+		});
+    $location.path('/main');
 	}
 
+  // start the quiz, send state of 0 to the server
   $scope.startQuiz = function() {
     // post to server we're starting the quiz
     $http({
@@ -76,9 +81,8 @@ quizApp.controller('QuizController', function ($scope, $http, $route, $routePara
     // post to server that we're moving on...
     $http({
       method: 'PUT',
-      url: '/quiz/' + $scope.id + '/state?state=1'
+      url: '/quiz/' + $scope.id + '/state?state=' + ++$scope.current
     });
-    $scope.current++;
   }
   
   $scope.endQuiz = function() {

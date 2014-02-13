@@ -9,7 +9,9 @@ import (
 	"strconv"
 )
 
-// add more later
+// handleQuizGet qets the quizID from the end of the given URL w
+// and writes the info json from the db back using r.
+// ((add more later))
 func handleQuizGet(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	qID, err := strconv.Atoi(vars["id"])
@@ -23,12 +25,13 @@ func handleQuizGet(w http.ResponseWriter, r *http.Request) {
 			fmt.Printf("%s", err)
 		} else {
 			fmt.Fprintf(w, info)
-			
 		}
 	}
 }
 
-// just an idea, not sure if we actually need this
+// handleQuizUpdate qets the quizID from the end of the given URL w,
+// gets the form data, and updates the quiz in the db.
+// ((just an idea, not sure if we actually need this))
 func handleQuizUpdate(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("HERE")
 	vars := mux.Vars(r)
@@ -48,7 +51,29 @@ func handleQuizUpdate(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("\nUpdated.")
 		}
 	}
+}
 
+// handleQuizList returns a json of all quiz ids and titles
+// using r.
+func handleQuizDelete(w http.ResponseWriter, r *http.Request) {
+	auth := auth(r)
+	if auth != nil {
+		vars := mux.Vars(r)
+		qid, err := strconv.Atoi(vars["id"])
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println(qid)
+			_, err := db.Exec(`DELETE FROM quiz WHERE qid=$1`, qid)
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				fmt.Println("\nDeleted.")
+			}
+		}
+	} else { //this is bad, but we can decide this later...
+		fmt.Println("Error - you cannot delete a quiz")
+	}
 }
 
 func handleQuizDelete(w http.ResponseWriter, r *http.Request) {

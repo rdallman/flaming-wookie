@@ -16,7 +16,10 @@ var (
 
 //student sends: ID:PIN as USER in header...
 
-//TODO figure out somewhere better to put this...
+// handlePage renders the page template for the given name path.
+// If a user is logged in (determined by calling auth(r)) the template
+// is executed with the user's information.
+// TODO figure out somewhere better to put this...
 func handlePage(name string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := auth(r) //check for cookie
@@ -25,6 +28,12 @@ func handlePage(name string) func(http.ResponseWriter, *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
+}
+
+func serveFile(url string, filename string) {
+	http.HandleFunc(url, func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, filename)
+	})
 }
 
 func main() {
@@ -54,5 +63,6 @@ func main() {
 	r.HandleFunc("/quiz/add", handleQuizCreate).Methods("POST")
 
 	http.Handle("/", r)
+	serveFile("/favicon.ico", "./favicon.ico")
 	http.ListenAndServe(":8080", nil)
 }
