@@ -2,10 +2,11 @@ package main
 
 import (
 	"database/sql"
-	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
 	"html/template"
 	"net/http"
+
+	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
 )
 
 var (
@@ -42,25 +43,37 @@ func main() {
 	r.PathPrefix("/templates/").Handler(http.StripPrefix("/templates/", http.FileServer(http.Dir("templates/"))))
 	r.HandleFunc("/", handlePage("index"))
 	r.HandleFunc("/login", handlePage("login")).Methods("GET")
-	r.HandleFunc("/logmein", login).Methods("POST")
+	r.HandleFunc("/logmein", login).Methods("POST") //TODO /login
 	r.HandleFunc("/logmeout", logout)
 	r.HandleFunc("/register", handlePage("register")).Methods("GET")
 	r.HandleFunc("/register", register).Methods("POST")
 
-	//TODO these are just ideas
+	//TODO url scheme proposal
+	//  /classes GET, POST (i.e. list classes, new class)
+	//  /classes/{cid:[0-9]+} GET (i.e. read class (e.g. most recent quizzes, students, grades...?)
+	//  /classes/{cid:[0-9]+}/quiz GET, POST (i.e. list quizzes, new quiz)
+	//  /classes/{cid:[0-9]+}/students GET, POST (i.e. list students, new student)
+	//  /classes/{cid:[0-9]+}/students/{sid} POST, DELETE (i.e. update student, delete student)
+	//  /quiz/{qid:[0-9]+} GET, POST, DELETE (i.e. read quiz, update quiz, delete quiz)
+	//  /quiz/{qid:[0-9]+}/splash PUT (i.e. teacher about to start quiz, accept connects, state -1?)
+	//  /quiz/{qid:[0-9]+}/connect PUT (i.e. student subscribe w/ HOST:PORT)
+	//  /quiz/{qid:[0-9]+}/state PUT (i.e. teacher next question)
+	//  /quiz/{qid:[0-9]+}/answer PUT (i.e. student answer)
+
+	//TODO browser "student" client
 
 	r.HandleFunc("/dashboard/quiz", handleQuizList).Methods("GET")
-	r.HandleFunc("/dashboard/quiz", handleQuizCreate).Methods("POST")
-	r.HandleFunc("/dashboard/quiz/{id}", handleQuizUpdate).Methods("POST")
-	r.HandleFunc("/dashboard/quiz/{id}", handleQuizGet).Methods("GET")
-	//r.HandleFunc("/dashboard/quiz/{id}", handleQuizDelete).Methods("DELETE")
-
-	r.HandleFunc("/quiz/{id}/state", changeState).Methods("PUT")
-	r.HandleFunc("/quiz/{id}/answer", handleAnswer).Methods("PUT")
+	r.HandleFunc("/dashboard/classes/{cid:[0-9]+}/quiz", handleQuizCreate).Methods("POST")
+	r.HandleFunc("/dashboard/quiz/{id:[0-9]+}", handleQuizGet).Methods("GET")
+	r.HandleFunc("/dashboard/quiz/{id:[0-9]+}", handleQuizUpdate).Methods("POST")
+	r.HandleFunc("/dashboard/quiz/{id:[0-9]+}", handleQuizDelete).Methods("DELETE")
+	r.HandleFunc("/dashboard/classes", handleCreateClass).Methods("POST")
+	r.HandleFunc("/dashboard/classes/{cid:[0-9]+}/student", handleAddStudents).Methods("POST")
+	r.HandleFunc("/quiz/{id:[0-9]+}/state", changeState).Methods("PUT")
+	r.HandleFunc("/quiz/{id:[0-9]+}/answer", handleAnswer).Methods("PUT")
 
 	r.HandleFunc("/dashboard/", handlePage("dashboard")).Methods("GET")
 	r.HandleFunc("/quiz", handlePage("quiz")).Methods("GET")
-	r.HandleFunc("/quiz/add", handleQuizCreate).Methods("POST")
 
 	http.Handle("/", r)
 	serveFile("/favicon.ico", "./favicon.ico")

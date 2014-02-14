@@ -5,11 +5,12 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"fmt"
-	"github.com/gorilla/securecookie"
-	_ "github.com/lib/pq"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/gorilla/securecookie"
+	_ "github.com/lib/pq"
 )
 
 var hashKey = []byte("notthesecretyourelookingfor")
@@ -63,13 +64,13 @@ func register(w http.ResponseWriter, r *http.Request) {
 	var id int
 	err := db.QueryRow(`SELECT uid FROM users WHERE email=$1`, email).Scan(&id)
 	if id > 0 {
+		//FIXME flash message and try again, this is bad
 		fmt.Fprintf(w, "User already exists")
 		return //do not add to db
 	}
 
 	salt := make([]byte, 32)
 	_, err = rand.Read(salt)
-	//saltstr := string(salt[:])
 
 	// create secure, salted hash
 	hash := sha256.Sum256(append([]byte(pass1), salt...))
@@ -82,9 +83,8 @@ func register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	//(login) create cookie and redirect to dashboard
+	//send to login
 	http.Redirect(w, r, "/login", 302)
-
 }
 
 // createCookie creates and sets a cookie for the user.
@@ -110,13 +110,12 @@ func createCookie(w http.ResponseWriter, uid int, email string) error {
 // logout deletes cookie and redirects to homepage.
 func logout(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("logged-in")
-	if err != nil {
+	if err != nil { //no cookie
 		return
 	}
 	cookie.Expires = time.Now()
 	http.SetCookie(w, cookie)
 	http.Redirect(w, r, "/", 302)
-
 }
 
 // auth checks for a user's cookie. If a valid cookie exists,
@@ -129,7 +128,6 @@ func auth(r *http.Request) *User {
 	}
 	values := make(map[string]string)
 	err = s.Decode("logged-in", cookie.Value, &values)
-	fmt.Println("cookie: ", values["uid"], cookie.Value)
 	if err != nil { // invalid user
 		return nil
 	}
