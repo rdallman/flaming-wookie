@@ -50,7 +50,8 @@ type UserReply struct {
 }
 
 type Session struct {
-	qid     int
-	replies chan UserReply
-	state   chan int
+	qid      int
+	replies  chan UserReply
+	state    chan int
+	students map[string]string
 }

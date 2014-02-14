@@ -1,0 +1,62 @@
+
+<style>
+  .list-group-item .delete {
+    display: none;
+  }
+  .list-group-item:hover .delete {
+    display: block;
+  }
+  .list-group-item .check {
+    color: #777;
+  }
+  .list-group-item .check:hover {
+    color: #090;
+  }
+  .list-group-item .selected {
+    color: #090;
+  }
+  .form-title {
+    font-size: 40px;
+  }
+</style>
+<div class="row">
+  <div class="col-md-10">
+    <section class="widget">
+    <div ng-controller="ClassController">
+      <h1>Create Class</h1>
+      <div class="row">
+        <form class="form-inline" role="form">
+          <div class="form-title col-md-5 form-group">
+            <input type="text" class="form-control" ng-model="className" ng-change="changeName(className)" placeholder="Name...">
+          </div>
+        </form>
+        <br />
+      </div>
+      <br />
+      <div class="row">
+        <form class="form-inline" role="form">
+          <div class="col-md-5 form-group">
+
+            <input type="text" class="form-control" ng-model="name" placeholder="Add a student...">
+            <input type="text" class="form-control" ng-model="email" placeholder="Add a student...">
+          </div>
+          <button class="btn btn-default" ng:click="addStudent(name, email)">Add Student!</button>
+        </form>
+      </div>
+      <br />
+      <div class="row" ng-repeat="student in myClass.students">
+        <div class="col-md-5">
+          <ul class="list-group">
+            <li class="list-group-item">
+            <span style="float:left;"><strong>{{student.name}} {{student.email}}</strong></span>
+            <span style="float:right"><a class="delete" ng-click="removeStudent(student)"><i class="fa fa-trash-o fa-lg text-danger"></i></a></span><br />
+            <span style="margin-left:20px;">{{question.text}}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <button class="btn btn-primary" ng:click="postClass()">Create Class!</button><br/>
+    </div>
+    </section>
+  </div>
+</div>
