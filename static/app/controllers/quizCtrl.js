@@ -59,7 +59,7 @@ quizApp.controller('QuizController', function ($scope, $http, $route, $routePara
 	$scope.postQuiz = function() {
 		$http({
 				method: 'POST', 
-				url: '/quiz/add', 
+				url: '/dashboard/quiz', 
 				data: angular.toJson($scope.quiz),
 				headers: {'Content-Type': 'application/json'}
 		});
