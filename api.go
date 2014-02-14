@@ -9,6 +9,136 @@ import (
 	"strconv"
 )
 
+// Expecting http body with JSON of form:
+// {
+//    name : string
+//    students : {
+//       id : name,
+//       ...
+//      }
+//  }
+//
+func handleCreateClass(w http.ResponseWriter, r *http.Request) {
+	user := auth(r)
+	if user == nil {
+		return //FIXME return error
+	}
+	decoder := json.NewDecoder(r.Body)
+
+	j := struct {
+		name     string
+		students map[string]string //map[id]name
+	}{}
+
+	err := decoder.Decode(&j)
+	if writeErr(err, w) {
+		return
+	}
+
+	st, err := json.Marshal(j.students)
+
+	// insert the quiz
+	_, err = db.Exec(`INSERT INTO classes (name, uid, students) 
+		VALUES($1, $2, $3)`, j.name, user.Uid, string(st))
+	if writeErr(err, w) {
+		return
+	}
+	writeSuccess(w)
+}
+
+func handleAddStudents(w http.ResponseWriter, r *http.Request) {
+	user := auth(r)
+	if user == nil {
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	j := struct {
+		name string
+		sid  string
+		cid  int
+	}{}
+	err := decoder.Decode(&j)
+	if writeErr(err, w) {
+		return
+	}
+
+	var jstring string
+	err = db.QueryRow(`SELECT students FROM classes WHERE uid = $1 AND cid = $2`, user.Uid, j.cid).Scan(&jstring)
+	if writeErr(err, w) {
+		return
+	}
+
+	var students map[string]string
+	err = json.Unmarshal([]byte(jstring), &students)
+	if writeErr(err, w) {
+		return
+	}
+	students[j.sid] = j.name
+
+	js, err := json.Marshal(students)
+	if writeErr(err, w) {
+		return
+	}
+
+	_, err = db.Exec(`UPDATE classes SET students=$1 WHERE cid= $2`, string(js), j.cid)
+	if writeErr(err, w) {
+		return
+	}
+
+	writeSuccess(w)
+}
+
+// TODO: flash message to show quiz was added, and redirect
+//
+// Expecting http body with JSON of form:
+//  cid : int
+//  title : string
+//  info :
+//    questions : [
+//      {
+//        text : string,
+//        answers : [
+//          string,
+//          ...
+//        ],
+//        correct : string
+//      },
+//      ...
+//    ],
+//    grades : {
+//      studentid (int) : grade (int)
+//    }
+//
+// on creation just make a blank map for grades
+
+// TODO add cid to frontend
+
+// handleQuizCreate creates a quiz from an AJAX POST request
+func handleQuizCreate(w http.ResponseWriter, r *http.Request) {
+	// grab body of request (should be the json of the quiz)
+	decoder := json.NewDecoder(r.Body)
+
+	j := struct {
+		cid   int
+		title string
+		info  Quiz
+	}{}
+
+	err := decoder.Decode(&j)
+	if writeErr(err, w) {
+		return
+	}
+
+	// insert the quiz
+	_, err = db.Exec(`INSERT INTO quiz (title, info, cid) 
+		VALUES($1, $2, $3)`, j.title, j.info, j.cid)
+	if writeErr(err, w) {
+		return
+	}
+	writeSuccess(w)
+}
+
 // handleQuizGet qets the quizID from the end of the given URL w
 // and writes the info json from the db back using r.
 // ((add more later))

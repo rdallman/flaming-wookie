@@ -54,6 +54,7 @@ func main() {
 	r.HandleFunc("/dashboard/quiz/{id}", handleQuizUpdate).Methods("POST")
 	r.HandleFunc("/dashboard/quiz/{id}", handleQuizGet).Methods("GET")
 	//r.HandleFunc("/dashboard/quiz/{id}", handleQuizDelete).Methods("DELETE")
+	r.HandleFunc("/dashboard/classes", handleCreateClass).Methods("POST")
 
 	r.HandleFunc("/quiz/{id}/state", changeState).Methods("PUT")
 	r.HandleFunc("/quiz/{id}/answer", handleAnswer).Methods("PUT")

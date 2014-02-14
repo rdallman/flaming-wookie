@@ -11,11 +11,13 @@ import (
 )
 
 //checks for err, replies with false success reply
-func writeErr(err error, w http.ResponseWriter) {
+func writeErr(err error, w http.ResponseWriter) bool {
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprint(w, Response{"success": false, "message": err.Error()})
+		return true
 	}
+	return false
 }
 
 func writeSuccess(w http.ResponseWriter) {
@@ -47,10 +49,16 @@ func handleAnswer(w http.ResponseWriter, r *http.Request) {
 		Id     string
 	}{}
 	err := decoder.Decode(&t)
-	writeErr(err, w)
+	if writeErr(err, w) {
+		return
+	}
 
 	qid, err := strconv.Atoi(vars["id"])
-	writeErr(err, w)
+	if writeErr(err, w) {
+		return
+	}
+
+	//SELECT *
 
 	//TODO if session doesn't exist, reply with 401? something that indicates not in progress?
 	qzSesh[qid].replies <- UserReply{t.Id, t.Answer}
