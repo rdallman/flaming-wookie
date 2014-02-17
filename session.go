@@ -21,9 +21,9 @@ func writeErr(err error, w http.ResponseWriter) bool {
 	return false
 }
 
-func writeSuccess(w http.ResponseWriter) {
+func writeSuccess(w http.ResponseWriter, info ...interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprint(w, Response{"success": true})
+	fmt.Fprint(w, Response{"success": true, "info": info})
 }
 
 // handleAnswer qets the quizID from the given URL w,
@@ -61,7 +61,6 @@ func handleAnswer(w http.ResponseWriter, r *http.Request) {
 
 	//SELECT *
 
-	//TODO if session doesn't exist, reply with 401? something that indicates not in progress?
 	qzSesh[qid].replies <- UserReply{t.Id, t.Answer}
 	writeSuccess(w)
 }
