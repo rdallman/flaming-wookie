@@ -21,9 +21,13 @@ func writeErr(err error, w http.ResponseWriter) bool {
 	return false
 }
 
-func writeSuccess(w http.ResponseWriter) {
+func writeSuccess(w http.ResponseWriter, info ...interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprint(w, Response{"success": true})
+	r := Response{"success": true}
+	if info != nil {
+		r["info"] = info
+	}
+	fmt.Fprint(w, r)
 }
 
 // handleAnswer qets the quizID from the given URL w,
@@ -67,6 +71,7 @@ func handleAnswer(w http.ResponseWriter, r *http.Request) {
 		writeErr(fmt.Errorf("User ID not in session"), w)
 		return
 	}
+
 	qzSesh[qid].replies <- UserReply{t.Id, t.Answer}
 	writeSuccess(w)
 }
@@ -80,6 +85,7 @@ func handleAnswer(w http.ResponseWriter, r *http.Request) {
 func changeState(w http.ResponseWriter, r *http.Request) {
 	user := auth(r)
 	if user == nil {
+		writeErr(fmt.Errorf("User not authorized"), w)
 		return
 	}
 
@@ -91,10 +97,11 @@ func changeState(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	_, err = db.Exec(`SELECT qid 
-  FROM classes, quiz 
-  WHERE quiz.qid = $1 
-  AND classes.qid = quiz.qid 
-  AND classes.uid = $2`, qid, user.Uid)
+                    FROM classes, quiz 
+                    WHERE quiz.qid = $1 
+                    AND classes.uid = $2
+                    AND classes.cid = quiz.cid`,
+		qid, user.Uid)
 
 	if writeErr(err, w) {
 		return
@@ -104,6 +111,7 @@ func changeState(w http.ResponseWriter, r *http.Request) {
 		State int `json:"state"`
 	}{}
 	err = decoder.Decode(&t)
+
 	if writeErr(err, w) {
 		return
 	}
