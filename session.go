@@ -23,7 +23,11 @@ func writeErr(err error, w http.ResponseWriter) bool {
 
 func writeSuccess(w http.ResponseWriter, info ...interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprint(w, Response{"success": true, "info": info})
+	r := Response{"success": true}
+	if info != nil {
+		r["info"] = info
+	}
+	fmt.Fprint(w, r)
 }
 
 // handleAnswer qets the quizID from the given URL w,
@@ -46,8 +50,8 @@ func handleAnswer(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	decoder := json.NewDecoder(r.Body)
 	t := struct {
-		Answer int
-		Id     string
+		Answer int    `json:"answer"`
+		Id     string `json:"id"`
 	}{}
 	err := decoder.Decode(&t)
 	if writeErr(err, w) {
@@ -59,7 +63,14 @@ func handleAnswer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//SELECT *
+	if _, ok := qzSesh[qid]; !ok {
+		writeErr(fmt.Errorf("Quiz session does not exist"), w)
+		return
+	}
+	if _, ok := qzSesh[qid].students[t.Id]; !ok {
+		writeErr(fmt.Errorf("User ID not in session"), w)
+		return
+	}
 
 	qzSesh[qid].replies <- UserReply{t.Id, t.Answer}
 	writeSuccess(w)
@@ -72,23 +83,58 @@ func handleAnswer(w http.ResponseWriter, r *http.Request) {
 //
 // TODO json me, authenticate cookie
 func changeState(w http.ResponseWriter, r *http.Request) {
-	//auth()
+	user := auth(r)
+	if user == nil {
+		writeErr(fmt.Errorf("User not authorized"), w)
+		return
+	}
+
 	vars := mux.Vars(r)
 	qid, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		//TODO does this fallthrough?
+		if writeErr(err, w) {
+			return
+		}
 	}
-	state, err := strconv.Atoi(r.FormValue("state"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	_, err = db.Exec(`SELECT qid 
+                    FROM classes, quiz 
+                    WHERE quiz.qid = $1 
+                    AND classes.uid = $2
+                    AND classes.cid = quiz.cid`,
+		qid, user.Uid)
+
+	if writeErr(err, w) {
+		return
 	}
-	if _, ok := qzSesh[qid]; !ok && state == 0 {
-		qzSesh[qid] = Session{qid, make(chan UserReply), make(chan int)}
+	decoder := json.NewDecoder(r.Body)
+	t := struct {
+		State int `json:"state"`
+	}{}
+	err = decoder.Decode(&t)
+
+	if writeErr(err, w) {
+		return
+	}
+	if _, ok := qzSesh[qid]; !ok && t.State == 0 {
+		var results string
+		err := db.QueryRow(`SELECT students 
+                        FROM classes, quiz 
+                        WHERE quiz.qid= $1 
+                        AND classes.cid = quiz.cid`, qid).Scan(&results)
+		var students map[string]string
+		err = json.Unmarshal([]byte(results), &students)
+		if writeErr(err, w) {
+			return
+		}
+
+		qzSesh[qid] = Session{qid, make(chan UserReply), make(chan int), students}
 		go quizSesh(qzSesh[qid])
+	} else if !ok {
+		writeErr(fmt.Errorf("Quiz session does not exist"), w)
+		return
 	}
-	fmt.Println(state)
-	qzSesh[qid].state <- state
+
+	qzSesh[qid].state <- t.State
 	writeSuccess(w)
 }
 

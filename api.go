@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -58,11 +59,12 @@ func handleAddStudents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	cid := mux.Vars(r)["cid"]
+
 	decoder := json.NewDecoder(r.Body)
 	j := struct {
 		name string
 		sid  string
-		cid  int
 	}{}
 	err := decoder.Decode(&j)
 	if writeErr(err, w) {
@@ -71,7 +73,7 @@ func handleAddStudents(w http.ResponseWriter, r *http.Request) {
 
 	//TODO ->> json
 	var jstring string
-	err = db.QueryRow(`SELECT students FROM classes WHERE uid = $1 AND cid = $2`, user.Uid, j.cid).Scan(&jstring)
+	err = db.QueryRow(`SELECT students FROM classes WHERE uid = $1 AND cid = $2`, user.Uid, cid).Scan(&jstring)
 	if writeErr(err, w) {
 		return
 	}
@@ -88,12 +90,43 @@ func handleAddStudents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = db.Exec(`UPDATE classes SET students=$1 WHERE cid= $2`, string(js), j.cid)
+	_, err = db.Exec(`UPDATE classes SET students=$1 WHERE cid= $2`, string(js), cid)
 	if writeErr(err, w) {
 		return
 	}
 
 	writeSuccess(w)
+}
+
+func handleClassList(w http.ResponseWriter, r *http.Request) {
+	//title and id, return JSON
+	auth := auth(r)
+	if auth == nil {
+		fmt.Errorf("User not authenticated", w)
+		return
+	}
+
+	rows, err := db.Query(`
+    SELECT cid, name
+    FROM classes
+    WHERE classes.uid = $1
+  `, auth.Uid)
+	if writeErr(err, w) {
+		return
+	}
+	defer rows.Close()
+
+	classes := make([]map[string]interface{}, 0)
+	for rows.Next() {
+		var cid int
+		var title string
+		err = rows.Scan(&cid, &title)
+		if writeErr(err, w) {
+			return
+		}
+		classes = append(classes, map[string]interface{}{"title": title, "cid": cid})
+	}
+	writeSuccess(w, classes)
 }
 
 // TODO: flash message to show quiz was added, and redirect
@@ -127,6 +160,9 @@ func handleQuizCreate(w http.ResponseWriter, r *http.Request) {
 	if user == nil {
 		return
 	}
+
+	cid := mux.Vars(r)["cid"]
+
 	var q Quiz
 	err := json.NewDecoder(r.Body).Decode(&q)
 	if writeErr(err, w) {
@@ -142,7 +178,7 @@ func handleQuizCreate(w http.ResponseWriter, r *http.Request) {
 	_, err = db.Exec(`
     INSERT INTO quiz (info, cid)
 		VALUES($1, $2)
-    `, string(info), 11) //TODO get CID from URL
+    `, string(info), cid) //TODO get CID from URL
 	if writeErr(err, w) {
 		return
 	}
@@ -152,6 +188,7 @@ func handleQuizCreate(w http.ResponseWriter, r *http.Request) {
 // handleQuizGet qets the quizID from the end of the given URL w
 // and writes the info json from the db back using r.
 // ((add more later))
+
 func handleQuizGet(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	qID, err := strconv.Atoi(vars["id"])
@@ -164,7 +201,7 @@ func handleQuizGet(w http.ResponseWriter, r *http.Request) {
 	if writeErr(err, w) {
 		return
 	}
-	fmt.Fprintf(w, info)
+	writeSuccess(w, info)
 }
 
 // handleQuizUpdate qets the quizID from the end of the given URL w,
@@ -196,6 +233,7 @@ func handleQuizUpdate(w http.ResponseWriter, r *http.Request) {
 func handleQuizDelete(w http.ResponseWriter, r *http.Request) {
 	auth := auth(r)
 	if auth == nil {
+		fmt.Errorf("User not authenticated", w)
 		return
 	}
 	vars := mux.Vars(r)
@@ -214,32 +252,46 @@ func handleQuizList(w http.ResponseWriter, r *http.Request) {
 	//title and id, return JSON
 	auth := auth(r)
 	if auth == nil {
+		fmt.Errorf("User not authenticated", w)
 		return
 	}
 
-	rows, err := db.Query(`
-    SELECT qid, info->>'title'
-    FROM quiz, classes
-    WHERE classes.uid = $1
-    AND classes.cid = quiz.cid
-  `, auth.Uid)
-	defer rows.Close()
+	vars := mux.Vars(r)
+
+	var rows *sql.Rows
+	var err error
+
+	//TODO maybe fall through with string.. handling of rows is bad
+	if cid, ok := vars["cid"]; ok {
+		rows, err = db.Query(`
+      SELECT qid, info->>'title', name
+      FROM quiz, classes
+      WHERE classes.uid = $1
+      AND classes.cid = $2
+      `, auth.Uid, cid)
+	} else {
+		rows, err = db.Query(`
+      SELECT qid, info->>'title', name
+      FROM quiz, classes
+      WHERE classes.uid = $1
+      AND classes.cid = quiz.cid
+    `, auth.Uid)
+	}
 	if writeErr(err, w) {
 		return
 	}
-	quizzes := make(map[string]int)
+	defer rows.Close() //TODO these may not close if err != sql.NoRowsErr
+
+	qs := make([]map[string]interface{}, 0)
+
 	for rows.Next() {
 		var qid int
-		var title string
-		err = rows.Scan(&qid, &title)
+		var title, name string
+		err = rows.Scan(&qid, &title, &name)
 		if writeErr(err, w) {
 			return
 		}
-		quizzes[title] = qid
+		qs = append(qs, map[string]interface{}{"title": title, "qid": qid, "name": name})
 	}
-	jquiz, err := json.Marshal(quizzes)
-	if writeErr(err, w) {
-		return
-	}
-	fmt.Fprintf(w, string(jquiz)) //TODO WriteSuccess?
+	writeSuccess(w, qs)
 }

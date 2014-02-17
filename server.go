@@ -49,12 +49,7 @@ func main() {
 	r.HandleFunc("/register", register).Methods("POST")
 
 	//TODO url scheme proposal
-	//  /classes GET, POST (i.e. list classes, new class)
-	//  /classes/{cid:[0-9]+} GET (i.e. read class (e.g. most recent quizzes, students, grades...?)
-	//  /classes/{cid:[0-9]+}/quiz GET, POST (i.e. list quizzes, new quiz)
-	//  /classes/{cid:[0-9]+}/students GET, POST (i.e. list students, new student)
 	//  /classes/{cid:[0-9]+}/students/{sid} POST, DELETE (i.e. update student, delete student)
-	//  /quiz/{qid:[0-9]+} GET, POST, DELETE (i.e. read quiz, update quiz, delete quiz)
 	//  /quiz/{qid:[0-9]+}/splash PUT (i.e. teacher about to start quiz, accept connects, state -1?)
 	//  /quiz/{qid:[0-9]+}/connect PUT (i.e. student subscribe w/ HOST:PORT)
 	//  /quiz/{qid:[0-9]+}/state PUT (i.e. teacher next question)
@@ -62,18 +57,20 @@ func main() {
 
 	//TODO browser "student" client
 
-	r.HandleFunc("/dashboard/quiz", handleQuizList).Methods("GET")
-	r.HandleFunc("/dashboard/quiz", handleQuizCreate).Methods("POST")
-	r.HandleFunc("/dashboard/quiz/{id:[0-9]+}", handleQuizGet).Methods("GET")
-	r.HandleFunc("/dashboard/quiz/{id:[0-9]+}", handleQuizUpdate).Methods("POST")
-	r.HandleFunc("/dashboard/quiz/{id:[0-9]+}", handleQuizDelete).Methods("DELETE")
-	r.HandleFunc("/dashboard/classes", handleCreateClass).Methods("POST")
-
+	r.HandleFunc("/quiz", handleQuizList).Methods("GET")
+	r.HandleFunc("/classes", handleClassList).Methods("GET")
+	r.HandleFunc("/classes", handleCreateClass).Methods("POST")
+	//TODO r.HandleFunc("/classes/{cid:[0-9]+}", handleClassGet).Methods("GET")
+	r.HandleFunc("/classes/{cid:[0-9]+}/quiz", handleQuizList).Methods("GET")
+	r.HandleFunc("/classes/{cid:[0-9]+}/quiz", handleQuizCreate).Methods("POST")
+	r.HandleFunc("/classes/{cid:[0-9]+}/student", handleAddStudents).Methods("POST")
+	r.HandleFunc("/quiz/{id:[0-9]+}", handleQuizGet).Methods("GET")
+	//TODO r.HandleFunc("/quiz/{id:[0-9]+}", handleQuizUpdate).Methods("POST")
+	//TODO r.HandleFunc("/quiz/{id:[0-9]+}", handleQuizDelete).Methods("DELETE")
 	r.HandleFunc("/quiz/{id:[0-9]+}/state", changeState).Methods("PUT")
 	r.HandleFunc("/quiz/{id:[0-9]+}/answer", handleAnswer).Methods("PUT")
 
 	r.HandleFunc("/dashboard/", handlePage("dashboard")).Methods("GET")
-	r.HandleFunc("/quiz", handlePage("quiz")).Methods("GET")
 
 	http.Handle("/", r)
 	serveFile("/favicon.ico", "./favicon.ico")
