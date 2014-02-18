@@ -42,35 +42,38 @@ func main() {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
 	r.PathPrefix("/templates/").Handler(http.StripPrefix("/templates/", http.FileServer(http.Dir("templates/"))))
 	r.HandleFunc("/", handlePage("index"))
+
+	//Authentication (auth.go) //TODO javascript me
 	r.HandleFunc("/login", handlePage("login")).Methods("GET")
 	r.HandleFunc("/logmein", login).Methods("POST") //TODO /login
 	r.HandleFunc("/logmeout", logout)
 	r.HandleFunc("/register", handlePage("register")).Methods("GET")
 	r.HandleFunc("/register", register).Methods("POST")
 
-	//TODO url scheme proposal
-	//  /classes/{cid:[0-9]+}/students/{sid} POST, DELETE (i.e. update student, delete student)
-	//  /quiz/{qid:[0-9]+}/splash PUT (i.e. teacher about to start quiz, accept connects, state -1?)
-	//  /quiz/{qid:[0-9]+}/connect PUT (i.e. student subscribe w/ HOST:PORT)
-	//  /quiz/{qid:[0-9]+}/state PUT (i.e. teacher next question)
-	//  /quiz/{qid:[0-9]+}/answer PUT (i.e. student answer)
-
-	//TODO browser "student" client
-
-	r.HandleFunc("/quiz", handleQuizList).Methods("GET")
+	//API class methods (api.go)
 	r.HandleFunc("/classes", handleClassList).Methods("GET")
 	r.HandleFunc("/classes", handleCreateClass).Methods("POST")
 	//TODO r.HandleFunc("/classes/{cid:[0-9]+}", handleClassGet).Methods("GET")
 	r.HandleFunc("/classes/{cid:[0-9]+}/quiz", handleQuizList).Methods("GET")
 	r.HandleFunc("/classes/{cid:[0-9]+}/quiz", handleQuizCreate).Methods("POST")
 	r.HandleFunc("/classes/{cid:[0-9]+}/student", handleAddStudents).Methods("POST")
+	//TODO /classes/{cid:[0-9]+}/students/{sid} POST, DELETE (i.e. update student, delete student)
+
+	//API quiz methods (api.go)
+	r.HandleFunc("/quiz", handleQuizList).Methods("GET")
 	r.HandleFunc("/quiz/{id:[0-9]+}", handleQuizGet).Methods("GET")
 	//TODO r.HandleFunc("/quiz/{id:[0-9]+}", handleQuizUpdate).Methods("POST")
 	//TODO r.HandleFunc("/quiz/{id:[0-9]+}", handleQuizDelete).Methods("DELETE")
+
+	//API quiz session (session.go)
 	r.HandleFunc("/quiz/{id:[0-9]+}/state", changeState).Methods("PUT")
 	r.HandleFunc("/quiz/{id:[0-9]+}/answer", handleAnswer).Methods("PUT")
+	//  /quiz/{qid:[0-9]+}/splash PUT (i.e. teacher about to start quiz, accept connects, state -1?)
+	//  /quiz/{qid:[0-9]+}/connect PUT (i.e. student subscribe w/ HOST:PORT)
 
+	//Javascript pages
 	r.HandleFunc("/dashboard/", handlePage("dashboard")).Methods("GET")
+	//TODO browser "student" client
 
 	http.Handle("/", r)
 	serveFile("/favicon.ico", "./favicon.ico")
