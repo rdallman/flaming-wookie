@@ -21,11 +21,12 @@ func writeErr(err error, w http.ResponseWriter) bool {
 	return false
 }
 
+//TODO want support for multiple items?
 func writeSuccess(w http.ResponseWriter, info ...interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	r := Response{"success": true}
-	if info != nil {
-		r["info"] = info
+	if len(info) == 1 {
+		r["info"] = info[0]
 	}
 	fmt.Fprint(w, r)
 }

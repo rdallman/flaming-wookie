@@ -23,7 +23,8 @@ import (
 func handleCreateClass(w http.ResponseWriter, r *http.Request) {
 	user := auth(r)
 	if user == nil {
-		return //FIXME return error
+		writeErr(fmt.Errorf("User not authenticated"), w)
+		return
 	}
 
 	j := struct {
@@ -50,12 +51,22 @@ func handleCreateClass(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w)
 }
 
-//add a student to a class
+// TODO needs tidying, put in URL? JSON?
+// TODO just use /class UPDATE method?
 //
+// add a student to a class
 //
+// URL: /classes/{cid}/students
+//
+// expecting JSON body:
+//  {
+//    "name": string,
+//    "sid": string
+//  }
 func handleAddStudents(w http.ResponseWriter, r *http.Request) {
 	user := auth(r)
 	if user == nil {
+		writeErr(fmt.Errorf("User not authenticated"), w)
 		return
 	}
 
@@ -63,8 +74,8 @@ func handleAddStudents(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 	j := struct {
-		name string
-		sid  string
+		Name string `json:"name"`
+		Sid  string `json:"sid"`
 	}{}
 	err := decoder.Decode(&j)
 	if writeErr(err, w) {
@@ -83,7 +94,7 @@ func handleAddStudents(w http.ResponseWriter, r *http.Request) {
 	if writeErr(err, w) {
 		return
 	}
-	students[j.sid] = j.name
+	students[j.Sid] = j.Name
 
 	js, err := json.Marshal(students)
 	if writeErr(err, w) {
@@ -98,6 +109,7 @@ func handleAddStudents(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w)
 }
 
+// GET /classes
 func handleClassList(w http.ResponseWriter, r *http.Request) {
 	//title and id, return JSON
 	auth := auth(r)
@@ -152,12 +164,11 @@ func handleClassList(w http.ResponseWriter, r *http.Request) {
 //
 // on creation just make a blank map for grades
 
-// TODO add cid to frontend
-
 // handleQuizCreate creates a quiz from an AJAX POST request
 func handleQuizCreate(w http.ResponseWriter, r *http.Request) {
 	user := auth(r)
 	if user == nil {
+		writeErr(fmt.Errorf("User not authenticated"), w)
 		return
 	}
 
@@ -229,7 +240,7 @@ func handleQuizUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//Delete a quiz
+// TODO Delete a quiz
 func handleQuizDelete(w http.ResponseWriter, r *http.Request) {
 	auth := auth(r)
 	if auth == nil {
@@ -248,6 +259,8 @@ func handleQuizDelete(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w)
 }
 
+// GET /quiz
+// GET /classes/{cid}/quiz
 func handleQuizList(w http.ResponseWriter, r *http.Request) {
 	//title and id, return JSON
 	auth := auth(r)
