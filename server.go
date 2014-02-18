@@ -57,13 +57,13 @@ func main() {
 	r.HandleFunc("/classes/{cid:[0-9]+}/quiz", handleQuizList).Methods("GET")
 	r.HandleFunc("/classes/{cid:[0-9]+}/quiz", handleQuizCreate).Methods("POST")
 	r.HandleFunc("/classes/{cid:[0-9]+}/student", handleAddStudents).Methods("POST")
-	//TODO /classes/{cid:[0-9]+}/students/{sid} POST, DELETE (i.e. update student, delete student)
+	//TODO /classes/{cid:[0-9]+}/students POST, DELETE (i.e. update student, delete student)
 
 	//API quiz methods (api.go)
 	r.HandleFunc("/quiz", handleQuizList).Methods("GET")
 	r.HandleFunc("/quiz/{id:[0-9]+}", handleQuizGet).Methods("GET")
+	r.HandleFunc("/quiz/{id:[0-9]+}", handleQuizDelete).Methods("DELETE")
 	//TODO r.HandleFunc("/quiz/{id:[0-9]+}", handleQuizUpdate).Methods("POST")
-	//TODO r.HandleFunc("/quiz/{id:[0-9]+}", handleQuizDelete).Methods("DELETE")
 
 	//API quiz session (session.go)
 	r.HandleFunc("/quiz/{id:[0-9]+}/state", changeState).Methods("PUT")
