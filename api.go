@@ -131,12 +131,12 @@ func handleClassList(w http.ResponseWriter, r *http.Request) {
 	classes := make([]map[string]interface{}, 0)
 	for rows.Next() {
 		var cid int
-		var title string
-		err = rows.Scan(&cid, &title)
+		var name string
+		err = rows.Scan(&cid, &name)
 		if writeErr(err, w) {
 			return
 		}
-		classes = append(classes, map[string]interface{}{"title": title, "cid": cid})
+		classes = append(classes, map[string]interface{}{"name": name, "cid": cid})
 	}
 	writeSuccess(w, classes)
 }
@@ -189,7 +189,7 @@ func handleQuizCreate(w http.ResponseWriter, r *http.Request) {
 	_, err = db.Exec(`
     INSERT INTO quiz (info, cid)
 		VALUES($1, $2)
-    `, string(info), cid) //TODO get CID from URL
+    `, string(info), cid)
 	if writeErr(err, w) {
 		return
 	}
@@ -200,6 +200,7 @@ func handleQuizCreate(w http.ResponseWriter, r *http.Request) {
 // and writes the info json from the db back using r.
 // ((add more later))
 
+//TODO auth?
 func handleQuizGet(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	qID, err := strconv.Atoi(vars["id"])
@@ -244,7 +245,7 @@ func handleQuizUpdate(w http.ResponseWriter, r *http.Request) {
 func handleQuizDelete(w http.ResponseWriter, r *http.Request) {
 	auth := auth(r)
 	if auth == nil {
-		fmt.Errorf("User not authenticated", w)
+		writeErr(fmt.Errorf("User not authenticated"), w)
 		return
 	}
 	vars := mux.Vars(r)
@@ -265,7 +266,7 @@ func handleQuizList(w http.ResponseWriter, r *http.Request) {
 	//title and id, return JSON
 	auth := auth(r)
 	if auth == nil {
-		fmt.Errorf("User not authenticated", w)
+		writeErr(fmt.Errorf("User not authenticated"), w)
 		return
 	}
 
