@@ -3,7 +3,7 @@
   <h1>{{ myClass.name }}</h1>
   <br />
   <div ng-repeat="s in myClass.students" >
-    <span>{{ s.name }} {{s.email}}</span>
+    <span>{{ s.name.first }} {{ s.name.last }} | {{s.email}}</span>
   </div>
 </div>
 </div>

@@ -11,6 +11,11 @@ classApp.controller('ClassController', function ($scope, $http, $route, $routePa
   $scope.classes = [];
   $scope.id = -1; 
 
+  $scope.class = {
+    name: "",
+    students: []
+  }
+
   $http({
     method: 'GET',
     url: '/classes'
@@ -39,19 +44,27 @@ classApp.controller('ClassController', function ($scope, $http, $route, $routePa
     });
   }
 
-  $scope.postClass = function() {
+  $scope.createClass = function() {
+      //alert(angular.toJson($scope.class));
     $http({
-      method: 'POST', 
-    url: '/classes', 
-    data: angular.toJson($scope.myClass),
-    headers: {'Content-Type': 'application/json'}
+      method: 'POST',
+      url: '/classes',
+      data: angular.toJson($scope.class),
+      headers: {'Content-Type': 'application/json'}
     });
-    $location.path('/classes');
+    $location.path('/main');
+    
   }
-  $scope.addStudent = function(name, email) {
-    $scope.myClass.students.push({name: name, email:email});
-    $scope.newStudent = "";
+
+  $scope.addStudent = function(email, firstName, lastName) {
+    $scope.class.students.push({email: email, name: {first: firstName, last: lastName}});
+    $scope.student.email = "";
+    $scope.student.name.first = "";
+    $scope.student.name.last = "";
+
   }
+
+  
 
   $scope.changeName = function(text) {
     $scope.myClass.name = text;

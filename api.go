@@ -31,7 +31,7 @@ func handleCreateClass(w http.ResponseWriter, r *http.Request) {
 
 	j := struct {
 		Name     string              `json:"name"`
-		Students []map[string]string `json:"students"`
+		Students []map[string]interface{} `json:"students"`
 	}{}
 
 	err := json.NewDecoder(r.Body).Decode(&j)

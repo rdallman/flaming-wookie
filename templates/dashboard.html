@@ -1,51 +1,51 @@
 
 <html ng-app="dashboardApp">
-  <head>
-    <title>Dashboard</title>
-    <script src="//code.jquery.com/jquery.js"></script>
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="http://fonts.googleapis.com/css?family=Oswald:300,400,700" rel="stylesheet" />
-    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet" />
-    <!--<link href="/static/dashboard.css" rel="stylesheet" media="screen">-->
-    <link href="/static/application.min.css" rel="stylesheet" media="screen">
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular-route.js"></script>
-    <style>
-      body {
-        background: rgb(94, 136, 159);
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="logo">
-        <a href="/"><h4>Wookiee</h4></a>
-      </div>
-      <nav id="sidebar" class="sidebar nav-collapse collapse">
+<head>
+<title>Dashboard</title>
+  <script src="//code.jquery.com/jquery.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="http://fonts.googleapis.com/css?family=Oswald:300,400,700" rel="stylesheet" />
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet" />
+  <!--<link href="/static/dashboard.css" rel="stylesheet" media="screen">-->
+  <link href="/static/application.min.css" rel="stylesheet" media="screen">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular-route.js"></script>
+  <style>
+    body {
+      background: rgb(94, 136, 159);
+    }
+  </style>
+</head>
+<body>
+    <div class="logo">
+      <a href="/"><h4>Wookiee</h4></a>
+    </div>
+    <nav id="sidebar" class="sidebar nav-collapse collapse">
       <ul class="side-nav">
         <li class="panel"><a href="#/main">Dashboard <i class="fa fa-home"></i></a></li>
-        <li class="panel"><a href="#/quiz">Quizzes <i class="fa fa-list-ol"></i></a></li>
-        <li class="panel"><a href="#/classes">Classes <i class="fa fa-list-ol"></i></a></li>
+        <li class="panel"><a href="#/classes">Classes <i class="fa fa-users"></i></a></li>
+        <li class="panel"><a href="">Quizzes <i class="fa fa-list-ol"></i></a></li>
       </ul>
-      </nav>
+    </nav>
 
-      <div class="wrap">
-        <header class="page-header">
+    <div class="wrap">
+      <header class="page-header">
         <div class="navbar">
           <ul class="nav navbar-nav navbar-right pull-right">
             <li><<<.Email>>></li>
           </ul>
         </div>
-        </header>
-        <div class="content" ng-view>
+      </header>
+      <div class="container content" ng-view>
 
-
-        </div>
+        
       </div>
     </div>
+
     <script src="/static/app/app.js"></script>
     <script src="/static/app/controllers/quizCtrl.js"></script>
     <script src="/static/app/controllers/classCtrl.js"></script>
-  </body>
+
+</body>
 </html>
