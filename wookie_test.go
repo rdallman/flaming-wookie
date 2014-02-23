@@ -112,7 +112,7 @@ func TestQuizList(t *testing.T) {
 	// TODO can check for specifics?
 }
 
-//TODO test failures... e.g. no cookie
+//TOD O test failures... e.g. no cookie
 
 func TestNewClass(t *testing.T) {
 	resp := httptest.NewRecorder()
@@ -133,3 +133,5 @@ func TestNewClass(t *testing.T) {
 	}
 	r.expectSuccess(t)
 }
+
+func 

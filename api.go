@@ -27,16 +27,18 @@ func handleCreateClass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//TODO generate ids here...
+
 	j := struct {
-		Name     string            `json:"name"`
-		Students map[string]string `json:"students"`
+		Name     string              `json:"name"`
+		Students []map[string]string `json:"students"`
 	}{}
 
 	err := json.NewDecoder(r.Body).Decode(&j)
 	if writeErr(err, w) {
 		return
 	}
-
+	fmt.Println(j)
 	st, err := json.Marshal(j.Students)
 	if writeErr(err, w) {
 		return
@@ -107,6 +109,41 @@ func handleAddStudents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeSuccess(w)
+}
+
+func handleClassGet(w http.ResponseWriter, r *http.Request) {
+	auth := auth(r)
+	if auth == nil {
+		writeErr(fmt.Errorf("User not authenticated"), w)
+		return
+	}
+
+	cid := mux.Vars(r)["cid"]
+	var name, students string
+
+	err := db.QueryRow(`
+    SELECT  name, students
+    FROM classes
+    WHERE classes.cid = $1
+  `, cid).Scan(&name, &students)
+
+	if writeErr(err, w) {
+		return
+	}
+
+	c := struct {
+		Name     string                   `json:"name"`
+		Students []map[string]interface{} `json:"students"`
+	}{
+		name,
+		nil,
+	}
+
+	err = json.Unmarshal([]byte(students), &c.Students)
+	if writeErr(err, w) {
+		return
+	}
+	writeSuccess(w, c)
 }
 
 // GET /classes
