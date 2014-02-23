@@ -1,7 +1,7 @@
 // sets up app for angular, includes modules
 // TODO better/cleaner way of including modules?
 // TODO dependencies without including every file in html?
-var dashboardApp = angular.module('dashboardApp', ['ngRoute', 'quizControllers', 'customFilters']);
+var dashboardApp = angular.module('dashboardApp', ['ngRoute', 'quizControllers', 'classControllers', 'customFilters']);
 
 // routes handler for angular
 // TODO better way of setting up routes? also resource handling
@@ -16,9 +16,21 @@ dashboardApp.config(['$routeProvider',
                           templateUrl: '/templates/partials/quiz-form.html',
                           controller: 'QuizController'
                         }).
+                        when('/class-create', {
+                          templateUrl: '/templates/partials/class-form.html',
+                          controller: 'QuizController'
+                        }).
                         when('/quiz/:id', {
                           templateUrl: '/templates/partials/quiz.html',
                           controller: 'QuizController'
+                        }).
+                        when('/classes', {
+                          templateUrl: '/templates/partials/classes.html',
+                          controller: 'ClassController'
+                        }).
+                        when('/classes/:id', {
+                          templateUrl: '/templates/partials/class.html',
+                          controller: 'ClassController'
                         }).
                         otherwise({
                           redirectTo: '/main'
@@ -48,11 +60,11 @@ dashboardApp.controller('MainController', function($scope, $http) {
   
   $http({
     method: 'GET',
-    url: '/dashboard/quiz'
+    url: '/quiz'
   }).
   success(function(data) {
-    angular.forEach(data, function(value, key) {
-      this.push({"Title": key, "id": value});
+    angular.forEach(data["info"], function(value, key) {
+      this.push(value)
     }, $scope.quizzes);
   }).
   error(function(data) {

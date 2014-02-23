@@ -1,0 +1,15 @@
+
+<link href="/static/slides.css" rel="stylesheet" media="screen">
+<div id="slides" ng-controller="ClassController">
+
+
+  <div ng-class="{active: current==-1}" class="slide">
+    <center><h1>{{ myClass.title }}</h1></center>
+    <br />
+    <br />
+  </div>
+  <div ng-repeat="s in myClass.students" >
+      <span>{{ s.name }} {{s.email}}</span>
+    </div>
+  </div>
+</div>

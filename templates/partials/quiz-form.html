@@ -1,68 +1,80 @@
 <style>
-  .list-group-item .delete {
-    display: none;
-  }
-  .list-group-item:hover .delete {
-    display: block;
-  }
-  .list-group-item .check {
-    color: #777;
-  }
-  .list-group-item .check:hover {
-    color: #090;
-  }
-  .list-group-item .selected {
-    color: #090;
-  }
+.list-group-item .delete {
+  display: none;
+}
+.list-group-item:hover .delete {
+  display: block;
+}
+.list-group-item .check {
+  color: #777;
+}
+.list-group-item .check:hover {
+  color: #090;
+}
+.list-group-item .selected {
+  color: #090;
+}
+.form-title {
+  font-size: 40px;
+}
 </style>
 <div class="row">
   <div class="col-md-10">
-<section class="widget">
-<div ng-controller="QuizController">
-    <h1>Create Quiz</h1>
-    <button class="btn btn-primary" ng:click="postQuiz()">Post Quiz!</button><br/>
-    <br />
-    <div class="row">
-      <form class="form-inline" role="form">
-        <div class="col-md-5 form-group">
-          <input type="text" class="form-control" ng-model="quizTitle" ng-change="changeTitle(quizTitle)" placeholder="Title...">
+    <section class="widget">
+      <div ng-controller="QuizController">
+        <h1>Create Quiz</h1>
+        <div class="row">
+          <form class="form-inline" role="form">
+            <div class="form-title col-md-5 form-group">
+              <input type="text" class="form-control" ng-model="quizTitle" ng-change="changeTitle(quizTitle)" placeholder="Title...">
+            </div>
+          </form>
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+              <span ng-if="mclass.name === ''">Pick a class</span>
+              <span ng-if="mclass.name">{{ mclass.name }}</span>
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                <li><a ng-repeat="c in classes" ng:click="setClass($index)">{{ c.name }}</a></li>
+            </ul>
+          </div>
         </div>
-      </form>
-    </div>
-    <br />
-    <div class="row">
-      <form class="form-inline" role="form">
-        <div class="col-md-5 form-group">
-          
-          <input type="text" class="form-control" ng-model="newQuestion" placeholder="Add a question...">
-          
+        <br /><br />
+        <div class="row">
+          <form class="form-inline" role="form">
+            <div class="col-md-5 form-group">
+
+              <input type="text" class="form-control" ng-model="newQuestion" placeholder="Add a question...">
+
+            </div>
+            <button class="btn btn-default" ng:click="addQuestion(newQuestion)">Add Question!</button>
+          </form>
         </div>
-        <button class="btn btn-default" ng:click="addQuestion(newQuestion)">Add Question!</button>
-      </form>
-    </div>
-    <br />
-    <div class="row" ng-repeat="question in quiz.questions">
-      <div class="col-md-5">
-        <ul class="list-group">
-          <li class="list-group-item">
-            <span style="float:left;"><strong>Question {{$index + 1}} :</strong></span>
-            <span style="float:right"><a class="delete" ng-click="removeQuestion(question)"><i class="fa fa-trash-o fa-lg text-danger"></i></a></span><br />
-            <span style="margin-left:20px;">{{question.text}}</span>
-          </li>
-          <li class="list-group-item" ng-repeat="answer in question.answers">
-            <a ng-click="setCorrectAnswer(question, $index)" class="check" ng-class="{selected: $index==question.correct}"><i class="fa fa-check fa-lg"></i></a>&nbsp;
-            {{answer}}
-            <a class="delete pull-right" ng-click="removeAnswer(question, answer)"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
-          </li>
-          <li class="list-group-item">
-            <form ng-submit="addAnswer(question, newAnswer)">
-              <input type="text" class="form-control" ng-model="newAnswer" placeholder="New Answer...">
-            </form>
-          </li>
-        </ul>
+        <br />
+        <div class="row" ng-repeat="question in quiz.questions">
+          <div class="col-md-5">
+            <ul class="list-group">
+              <li class="list-group-item">
+              <span style="float:left;"><strong>Question {{$index + 1}} :</strong></span>
+              <span style="float:right"><a class="delete" ng-click="removeQuestion(question)"><i class="fa fa-trash-o fa-lg text-danger"></i></a></span><br />
+              <span style="margin-left:20px;">{{question.text}}</span>
+              </li>
+              <li class="list-group-item" ng-repeat="answer in question.answers">
+              <a ng-click="setCorrectAnswer(question, $index)" class="check" ng-class="{selected: $index==question.correct}"><i class="fa fa-check fa-lg"></i></a>&nbsp;
+              {{answer}}
+              <a class="delete pull-right" ng-click="removeAnswer(question, answer)"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
+              </li>
+              <li class="list-group-item">
+              <form ng-submit="addAnswer(question, newAnswer)">
+                <input type="text" class="form-control" ng-model="newAnswer" placeholder="New Answer...">
+              </form>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <button class="btn btn-primary" ng:click="postQuiz()">Post Quiz!</button><br/>
       </div>
-    </div>
-</div>
-</section>
+    </section>
   </div>
 </div>

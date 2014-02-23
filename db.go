@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+
 	_ "github.com/lib/pq"
 )
 
@@ -49,10 +50,16 @@ func init() {
 	//)`)
 	//fmt.Println(err)
 
-	//_, err = db.Exec(`CREATE TABLE classes (
-	//cid serial PRIMARY KEY,
-	//name text,
-	//uid integer REFERENCES users (uid)
+	//_, err = db.Exec(`CREATE TABLE cookies (
+	//    uid integer,
+	//    value text)`)
+	//fmt.Println(err)
+
+	//	_, err = db.Exec(`CREATE TABLE classes (
+	//	cid serial PRIMARY KEY,
+	//	name text,
+	//  students json,
+	//	uid integer REFERENCES users (uid)
 	//)`)
 	//fmt.Println(err)
 
