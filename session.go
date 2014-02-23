@@ -1,3 +1,15 @@
+/*
+session.go
+
+writeErr
+writeSuccess
+handleAnswer
+changeState
+quizSesh
+quit
+*/
+
+
 package main
 
 import (

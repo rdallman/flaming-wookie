@@ -1,3 +1,11 @@
+/*
+server.go
+
+handlePage
+serveFile
+main
+*/
+
 package main
 
 import (
