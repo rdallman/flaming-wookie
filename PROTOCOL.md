@@ -488,3 +488,12 @@ particular class belongs to.
 ##### Success Output
 
 
+/{cid}/quiz
+
+map[cid]
+
+{"answer": 1, "id", 3123123123123}
+{"state": 0, "qid": 12} COOKIE
+{"success":true/false} FOR STATE/ANSWER
+CONNECT
+DISCONNECT
