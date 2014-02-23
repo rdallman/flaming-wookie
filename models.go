@@ -33,9 +33,9 @@ type Quiz struct {
 }
 
 type Question struct {
-	Text    string   `json:text`
-	Answers []string `json:answers`
-	Correct int      `json:correct` //offset in []Answers
+	Text    string   `json:"text"`
+	Answers []string `json:"answers"`
+	Correct int      `json:"correct"` //offset in []Answers
 
 }
 

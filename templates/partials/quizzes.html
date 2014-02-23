@@ -1,0 +1,25 @@
+<div ng-controller="QuizController">
+	
+
+	<div class="row">
+		<div class="col-md-8">
+			<section class="widget">
+				<header>
+              <h4 style="float:left;font-size:24px;">Quizzes</h4>
+              <a style="float:right"href="#/quiz-create" class="btn btn-large btn-primary pull-right">Create Quiz!</a>
+				</header>
+				<div style="margin-top: 40px;"class="body">
+					<ul class="list-group">
+						<li class="list-group-item" ng-repeat="quizObj in quizList">
+							<a style="color:white;" href="#/quiz/{{ quizObj.id }}">{{ quizObj.Title }}</a>
+						</li>
+					</ul>
+					
+				</div>
+			</section>
+			{{ quizList }}
+		</div>
+	</div>
+	
+	</div>
+</div>

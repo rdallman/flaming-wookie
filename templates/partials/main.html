@@ -5,13 +5,13 @@
 		<div class="col-md-8">
 			<section class="widget">
 				<header>
-              <h4 style="float:left;font-size:24px;">Quizzes</h4>
-              <a style="float:right"href="#/quiz-create" class="btn btn-large btn-primary pull-right">Create Quiz!</a>
+              <h4 style="float:left;font-size:24px;">Classes</h4>
+              <a style="float:right"href="#/class-form" class="btn btn-large btn-primary pull-right">Create Class</a>
 				</header>
 				<div style="margin-top: 40px;"class="body">
 					<ul class="list-group">
-						<li class="list-group-item" ng-repeat="quiz in quizzes">
-							<a style="color:white;" href="#/quiz/{{ quiz.qid }}">{{ quiz.title }}</a>
+						<li class="list-group-item" ng-repeat="class in classList">
+							<a style="color:white;" href="#/classes/{{ class.cid }}">{{ class.name }}</a>
 						</li>
 					</ul>
 				</div>
@@ -19,5 +19,22 @@
 		</div>
 	</div>
 	
+	<div class="row">
+		<div class="col-md-8">
+			<section class="widget">
+				<header>
+              <h4 style="float:left;font-size:24px;">Quizzes</h4>
+              <a style="float:right"href="#/quiz-create" class="btn btn-large btn-primary pull-right">Create Quiz</a>
+				</header>
+				<div style="margin-top: 40px;"class="body">
+					<ul class="list-group">
+						<li class="list-group-item" ng-repeat="quiz in quizList">
+							<a style="color:white;" href="#/quiz/{{ quiz.qid }}">{{ quiz.title }}<span style="color:#333"> for {{ quiz.name }}</span></a>
+
+						</li>
+					</ul>
+				</div>
+			</section>
+		</div>
 	</div>
 </div>
