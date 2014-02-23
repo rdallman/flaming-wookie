@@ -114,7 +114,7 @@ func handleClassList(w http.ResponseWriter, r *http.Request) {
 	//title and id, return JSON
 	auth := auth(r)
 	if auth == nil {
-		fmt.Errorf("User not authenticated", w)
+		writeErr(fmt.Errorf("User not authenticated"), w)
 		return
 	}
 
@@ -213,7 +213,9 @@ func handleQuizGet(w http.ResponseWriter, r *http.Request) {
 	if writeErr(err, w) {
 		return
 	}
-	writeSuccess(w, info)
+	var obj map[string]interface{}
+	json.Unmarshal([]byte(info), &obj)
+	writeSuccess(w, obj)
 }
 
 // handleQuizUpdate qets the quizID from the end of the given URL w,

@@ -48,11 +48,11 @@ dashboardApp.controller('MainController', function($scope, $http) {
   
   $http({
     method: 'GET',
-    url: '/dashboard/quiz'
+    url: '/quiz'
   }).
   success(function(data) {
-    angular.forEach(data, function(value, key) {
-      this.push({"Title": key, "id": value});
+    angular.forEach(data["info"], function(value, key) {
+      this.push(value)
     }, $scope.quizzes);
   }).
   error(function(data) {
