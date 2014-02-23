@@ -1,3 +1,19 @@
+/*
+api.go 
+
+handleCreateClass
+handleAddStudents
+sendStudentEmail
+handleClassGet
+handleClassList
+handleQuizCreate
+handleQuizGet
+handleQuizUpdate
+handleQuizDelete
+handleQuizList
+*/
+
+
 package main
 
 import (
@@ -45,11 +61,13 @@ func handleCreateClass(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// insert the quiz
-	_, err = db.Exec(`INSERT INTO classes (name, uid, students) 
-		VALUES($1, $2, $3)`, j.Name, user.Uid, string(st))
+	var cid int
+	err = db.QueryRow(`INSERT INTO classes (name, uid, students) 
+		VALUES($1, $2, $3)  RETURNING cid`, j.Name, user.Uid, string(st)).Scan(&cid)
 	if writeErr(err, w) {
 		return
 	}
+	go sendStudentEmail(cid)
 	writeSuccess(w)
 }
 
