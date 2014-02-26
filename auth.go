@@ -1,14 +1,3 @@
-/*
-auth.go
-
-login
-register
-createCookie
-logout
-auth
-*/
-
-
 package main
 
 import (
