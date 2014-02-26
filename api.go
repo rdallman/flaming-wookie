@@ -1,19 +1,3 @@
-/*
-api.go 
-
-handleCreateClass
-handleAddStudents
-sendStudentEmail
-handleClassGet
-handleClassList
-handleQuizCreate
-handleQuizGet
-handleQuizUpdate
-handleQuizDelete
-handleQuizList
-*/
-
-
 package main
 
 import (
@@ -43,11 +27,9 @@ func handleCreateClass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO generate ids here...
-
 	j := struct {
 		Name     string              `json:"name"`
-		Students []map[string]interface{} `json:"students"`
+		Students []map[string]string `json:"students"`
 	}{}
 
 	err := json.NewDecoder(r.Body).Decode(&j)
@@ -55,20 +37,52 @@ func handleCreateClass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	st, err := json.Marshal(j.Students)
+	// insert the class
+	var cid int
+	err = db.QueryRow(`INSERT INTO classes (name, uid, students) 
+		VALUES($1, $2, $3)  RETURNING cid`, j.Name, user.Uid, "[]").Scan(&cid)
 	if writeErr(err, w) {
+		return
+	}
+	
+	//loop over students to add them
+	for _, s := range j.Students {
+		addStudent(cid, s)
+	}
+	writeSuccess(w)
+}
+
+func addStudent(cid int, studentobj map[string]string){
+	var err error
+
+	//create hash
+	studentobj["hash"] = "herebemyhash"
+
+
+	//get student json from db for cid
+	var studentjson string
+	err = db.QueryRow(`SELECT students FROM classes WHERE cid=$1`, cid).Scan(&studentjson)
+	if err != nil {
+		return
+	}
+	//unmarshal json
+	var students []map[string]string
+ 	json.Unmarshal([]byte(studentjson), &students)
+ 	//append new student
+ 	students = append(students, studentobj)
+ 	//marshal json
+ 	newStudentjson, err := json.Marshal(students)
+ 	if err != nil {
+		return
+	}
+	//update db with new student json
+	_, err = db.Exec(`UPDATE classes SET students=$2 WHERE cid=$1`, cid, newStudentjson)
+	if err != nil {
 		return
 	}
 
-	// insert the quiz
-	var cid int
-	err = db.QueryRow(`INSERT INTO classes (name, uid, students) 
-		VALUES($1, $2, $3)  RETURNING cid`, j.Name, user.Uid, string(st)).Scan(&cid)
-	if writeErr(err, w) {
-		return
-	}
-	go sendStudentEmail(cid)
-	writeSuccess(w)
+	//send email
+	sendStudentClassEmail(cid, studentobj)
 }
 
 // TODO needs tidying, put in URL? JSON?
@@ -151,7 +165,7 @@ func handleClassGet(w http.ResponseWriter, r *http.Request) {
 
 	c := struct {
 		Name     string                   `json:"name"`
-		Students []map[string]interface{} `json:"students"`
+		Students []map[string]string `json:"students"`
 	}{
 		name,
 		nil,

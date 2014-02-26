@@ -1,9 +1,3 @@
-/*
-db.go
-
-init
-*/
-
 package main
 
 import (

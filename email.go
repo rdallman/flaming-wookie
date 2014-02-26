@@ -6,7 +6,6 @@ import (
 	"text/template"
 	"log"
 	"strconv"
-	"encoding/json"
 
 	_ "github.com/lib/pq"
 )
@@ -41,44 +40,45 @@ Sincerely,
 {{.From}}
 `
 
-func sendStudentEmail(cid int) {
+func sendStudentClassEmail(cid int, studentobj map[string]string) {
 	var err error
 	
-	//get stuff from db
-	var classname, studentjson string
-	err = db.QueryRow(`SELECT name, students FROM classes WHERE cid=$1`, cid).Scan(&classname, &studentjson)
+	//get class name from db
+	var classname string
+	err = db.QueryRow(`SELECT name FROM classes WHERE cid=$1`, cid).Scan(&classname)
 	if err != nil {
 		return
 	}
-	var students []map[string]string
-	json.Unmarshal([]byte(studentjson), &students)
 
-	//loop over students and send email
-	for _, student := range students {
-		var doc bytes.Buffer
-		context := SmtpTemplateData{
-		  "WooQuiz",
-		  classname + " Class Registration",
-		  "Hello " + student["name"] + ", You have been added to this class. Here is your awesome stuff that you can do stuff with! yay",
-		}
+	//create text for email
+	var doc bytes.Buffer
+	context := SmtpTemplateData{
+	  "WooQuiz",
+	  classname + " Class Registration",
+	  "Hello " + studentobj["fname"] + " " + studentobj["lname"] + "," +
+	  	"\nYou have been added to the class " + classname + " on WooQuiz.com!" +
+	  	"\nClass ID: " + string(cid) + 
+	  	"\nStudent Hash: " + studentobj["hash"],
+	}
 
-		t := template.New("emailTemplate")
-		t, err = t.Parse(emailTemplate)
-		if err != nil {
-		  log.Print("error trying to parse mail template")
-		}
-		err = t.Execute(&doc, context)
-		if err != nil {
-		  log.Print("error trying to execute mail template")
-		}
+	//template email
+	t := template.New("emailTemplate")
+	t, err = t.Parse(emailTemplate)
+	if err != nil {
+	  log.Print("error trying to parse mail template")
+	}
+	err = t.Execute(&doc, context)
+	if err != nil {
+	  log.Print("error trying to execute mail template")
+	}
 
-		err = smtp.SendMail(emailUser.EmailServer+":"+strconv.Itoa(emailUser.Port),
-		  emailauth,
-		  emailUser.Username,
-		  []string{student["email"]},
-		  doc.Bytes())
-		if err != nil {
-		  log.Print("ERROR: attempting to send a mail ", err)
-		}
+	//send email
+	err = smtp.SendMail(emailUser.EmailServer+":"+strconv.Itoa(emailUser.Port),
+	  emailauth,
+	  emailUser.Username,
+	  []string{studentobj["email"]},
+	  doc.Bytes())
+	if err != nil {
+	  log.Print("ERROR: attempting to send a mail ", err)
 	}
 }

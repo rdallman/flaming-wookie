@@ -1,7 +1,3 @@
-/*
-models.go
-*/
-
 package main
 
 // {
