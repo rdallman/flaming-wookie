@@ -40,25 +40,18 @@ Sincerely,
 {{.From}}
 `
 
-func sendStudentClassEmail(cid int, studentobj map[string]string) {
+func sendStudentClassEmail(cid int, classname string, student map[string]string) {
 	var err error
 	
-	//get class name from db
-	var classname string
-	err = db.QueryRow(`SELECT name FROM classes WHERE cid=$1`, cid).Scan(&classname)
-	if err != nil {
-		return
-	}
-
 	//create text for email
 	var doc bytes.Buffer
 	context := SmtpTemplateData{
 	  "WooQuiz",
 	  classname + " Class Registration",
-	  "Hello " + studentobj["fname"] + " " + studentobj["lname"] + "," +
-	  	"\nYou have been added to the class " + classname + " on WooQuiz.com!" +
-	  	"\nClass ID: " + string(cid) + 
-	  	"\nStudent Hash: " + studentobj["hash"],
+	  "Hello " + student["fname"] + " " + student["lname"] + "," +
+	  	"\n\nYou have been added to the class " + classname + " on WooQuiz.com!" +
+	  	"\nClass ID: " + strconv.Itoa(cid) + 
+	  	"\nStudent ID: " + student["sid"],
 	}
 
 	//template email
@@ -76,7 +69,7 @@ func sendStudentClassEmail(cid int, studentobj map[string]string) {
 	err = smtp.SendMail(emailUser.EmailServer+":"+strconv.Itoa(emailUser.Port),
 	  emailauth,
 	  emailUser.Username,
-	  []string{studentobj["email"]},
+	  []string{student["email"]},
 	  doc.Bytes())
 	if err != nil {
 	  log.Print("ERROR: attempting to send a mail ", err)

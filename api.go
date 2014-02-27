@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"crypto/md5"
+	"encoding/hex"
 
+	"github.com/dchest/uniuri"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
@@ -37,53 +40,37 @@ func handleCreateClass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// insert the class
+	//create sid for each student
+	for _, s := range j.Students {
+		s = createStudentId(s)
+	}
+
+	st, err := json.Marshal(j.Students)
+	if writeErr(err, w) {
+		return
+	}
+
+	// insert the quiz
 	var cid int
 	err = db.QueryRow(`INSERT INTO classes (name, uid, students) 
-		VALUES($1, $2, $3)  RETURNING cid`, j.Name, user.Uid, "[]").Scan(&cid)
+		VALUES($1, $2, $3)  RETURNING cid`, j.Name, user.Uid, string(st)).Scan(&cid)
 	if writeErr(err, w) {
 		return
 	}
 	
-	//loop over students to add them
+	//send student emails
 	for _, s := range j.Students {
-		addStudent(cid, s)
+		go sendStudentClassEmail(cid, j.Name, s)
 	}
 	writeSuccess(w)
 }
 
-func addStudent(cid int, studentobj map[string]string){
-	var err error
-
-	//create hash
-	studentobj["hash"] = "herebemyhash"
-
-
-	//get student json from db for cid
-	var studentjson string
-	err = db.QueryRow(`SELECT students FROM classes WHERE cid=$1`, cid).Scan(&studentjson)
-	if err != nil {
-		return
-	}
-	//unmarshal json
-	var students []map[string]string
- 	json.Unmarshal([]byte(studentjson), &students)
- 	//append new student
- 	students = append(students, studentobj)
- 	//marshal json
- 	newStudentjson, err := json.Marshal(students)
- 	if err != nil {
-		return
-	}
-	//update db with new student json
-	_, err = db.Exec(`UPDATE classes SET students=$2 WHERE cid=$1`, cid, newStudentjson)
-	if err != nil {
-		return
-	}
-
-	//send email
-	sendStudentClassEmail(cid, studentobj)
+func createStudentId(student map[string]string) map[string]string {
+	hash := md5.Sum([]byte(fmt.Sprint(student["email"], uniuri.New())))
+	student["sid"] = hex.EncodeToString(hash[0:16])
+	return student
 }
+
 
 // TODO needs tidying, put in URL? JSON?
 // TODO just use /class UPDATE method?
