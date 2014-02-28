@@ -16,12 +16,12 @@
                         <input type="text" class="form-control" ng-model="student.email" placeholder="Student Email...">
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" ng-model="student.name.first" placeholder="Student First Name...">
+                        <input type="text" class="form-control" ng-model="student.fname" placeholder="Student First Name...">
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" ng-model="student.name.last" placeholder="Student Last Name..."> 
+                        <input type="text" class="form-control" ng-model="student.lname" placeholder="Student Last Name..."> 
                     </div>
-                    <button class="btn btn-default" ng:click="addStudent(student.email, student.name.first, student.name.last)">Add Student</button>
+                    <button class="btn btn-default" ng:click="addStudent(student.email, student.fname, student.lname)">Add Student</button>
                     </form>
                     <div class="row" ng-repeat="student in class.students">
                         <div class="col-md-6">

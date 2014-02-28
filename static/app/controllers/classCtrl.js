@@ -57,10 +57,10 @@ classApp.controller('ClassController', function ($scope, $http, $route, $routePa
   }
 
   $scope.addStudent = function(email, firstName, lastName) {
-    $scope.class.students.push({email: email, name: {first: firstName, last: lastName}});
+    $scope.class.students.push({email: email, fname: firstName, lname: lastName});
     $scope.student.email = "";
-    $scope.student.name.first = "";
-    $scope.student.name.last = "";
+    $scope.student.fname = "";
+    $scope.student.lname = "";
 
   }
 
