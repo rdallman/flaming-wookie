@@ -18,8 +18,8 @@ quizApp.controller('QuizController', function ($scope, $http, $route, $routePara
   // main model for quiz
   $scope.quiz = {
     title: "",
-  questions: [],
-  grades: {}
+    questions: [],
+    grades: {}
   };
 
   if ($routeParams.id !== undefined) {	
@@ -95,7 +95,9 @@ quizApp.controller('QuizController', function ($scope, $http, $route, $routePara
     // post to server we're starting the quiz
     $http({
       method: 'PUT',
-    url: '/quiz/' + $scope.id + '/state?state=0'
+      url: '/quiz/' + $scope.id + '/state',
+      data: angular.toJson({state: 0}),
+      headers: {'Content-Type': 'application/json'}
     });
     // set current to start of questions
     $scope.current = 0;
@@ -105,14 +107,18 @@ quizApp.controller('QuizController', function ($scope, $http, $route, $routePara
     // post to server that we're moving on...
     $http({
       method: 'PUT',
-    url: '/quiz/' + $scope.id + '/state?state=' + ++$scope.current
+      url: '/quiz/' + $scope.id + '/state',
+      data: angular.toJson({state: $scope.current}),
+      headers: {'Content-Type': 'application/json'}
     });
   }
 
   $scope.endQuiz = function() {
     $http({
       method: 'PUT',
-    url: '/quiz/' + $scope.id + '/state?state=-1'
+      url: '/quiz/' + $scope.id + '/state',
+      data: angular.toJson({state: -1}),
+      headers: {'Content-Type': 'application/json'}
     });
     // redirect to main
     $location.path('/main');

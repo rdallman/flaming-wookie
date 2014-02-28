@@ -53,5 +53,5 @@ type Session struct {
 	qid      int
 	replies  chan UserReply
 	state    chan int
-	students map[string]string
+	students map[string]bool
 }

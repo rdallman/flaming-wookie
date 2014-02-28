@@ -1,15 +1,14 @@
 package main
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
-	"crypto/md5"
-	"encoding/hex"
 
-	"github.com/dchest/uniuri"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
@@ -57,7 +56,7 @@ func handleCreateClass(w http.ResponseWriter, r *http.Request) {
 	if writeErr(err, w) {
 		return
 	}
-	
+
 	//send student emails
 	for _, s := range j.Students {
 		go sendStudentClassEmail(cid, j.Name, s)
@@ -66,11 +65,26 @@ func handleCreateClass(w http.ResponseWriter, r *http.Request) {
 }
 
 func createStudentId(student map[string]string) map[string]string {
-	hash := md5.Sum([]byte(fmt.Sprint(student["email"], uniuri.New())))
-	student["sid"] = hex.EncodeToString(hash[0:16])
+	b := make([]byte, 12)
+	rand.Read(b)
+
+	str := base64.StdEncoding.EncodeToString(b)
+	fmt.Println(str)
+	student["sid"] = str
+	// TODO(?): so the below would only provide entropy on 16 bytes (this is fine)
+	// that are being expanded when being encoded to string to nearly
+	// double their size, yet only providing half the entropy. (output == 33 bytes)
+	// We need a more efficient human-readable hash, such that we can provide
+	// entropy on all or most of 16 bytes and keep our output around 16 bytes.
+	//
+	// My proposal is above.
+	// It provides entropy on 12 bytes = 3.22626676 * 10^21
+	// With output of 16 bytes (somewhat reasonable -- open for discussion)
+
+	//hash := md5.Sum([]byte(fmt.Sprint(student["email"], uniuri.New())))
+	//student["sid"] = hex.EncodeToString(hash[0:16])
 	return student
 }
-
 
 // TODO needs tidying, put in URL? JSON?
 // TODO just use /class UPDATE method?
@@ -151,7 +165,7 @@ func handleClassGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c := struct {
-		Name     string                   `json:"name"`
+		Name     string              `json:"name"`
 		Students []map[string]string `json:"students"`
 	}{
 		name,

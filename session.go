@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -47,7 +46,7 @@ func writeSuccess(w http.ResponseWriter, info ...interface{}) {
 //
 //TODO auth student
 func handleAnswer(w http.ResponseWriter, r *http.Request) {
-	_ = sql.ErrNoRows
+	//_ = sql.ErrNoRows //TODO?
 	vars := mux.Vars(r)
 	decoder := json.NewDecoder(r.Body)
 	t := struct {
@@ -77,7 +76,7 @@ func handleAnswer(w http.ResponseWriter, r *http.Request) {
 }
 
 // must have cookie
-//PUT /quiz/{id}/state
+// PUT /quiz/{id}/state
 //  body:
 //    state : int
 //
@@ -87,23 +86,20 @@ func changeState(w http.ResponseWriter, r *http.Request) {
 	if user == nil {
 		return
 	}
-
 	vars := mux.Vars(r)
 	qid, err := strconv.Atoi(vars["id"])
-	if err != nil {
-		if writeErr(err, w) {
-			return
-		}
+	if writeErr(err, w) {
+		return
 	}
 	_, err = db.Exec(`SELECT qid 
   FROM classes, quiz 
   WHERE quiz.qid = $1 
-  AND classes.qid = quiz.qid 
   AND classes.uid = $2`, qid, user.Uid)
 
 	if writeErr(err, w) {
 		return
 	}
+
 	decoder := json.NewDecoder(r.Body)
 	t := struct {
 		State int `json:"state"`
@@ -112,19 +108,32 @@ func changeState(w http.ResponseWriter, r *http.Request) {
 	if writeErr(err, w) {
 		return
 	}
+
 	if _, ok := qzSesh[qid]; !ok && t.State == 0 {
 		var results string
 		err := db.QueryRow(`SELECT students 
                         FROM classes, quiz 
                         WHERE quiz.qid= $1 
                         AND classes.cid = quiz.cid`, qid).Scan(&results)
-		var students map[string]string
-		err = json.Unmarshal([]byte(results), &students)
 		if writeErr(err, w) {
 			return
 		}
 
-		qzSesh[qid] = Session{qid, make(chan UserReply), make(chan int), students}
+		//turns json students into map[id]bool for membership checking in session
+		ids := make(map[string]bool)
+
+		var students []map[string]string
+		err = json.Unmarshal([]byte(results), &students)
+
+		if writeErr(err, w) {
+			return
+		}
+
+		for _, s := range students {
+			ids[s["sid"]] = true
+		}
+
+		qzSesh[qid] = Session{qid, make(chan UserReply), make(chan int), ids}
 		go quizSesh(qzSesh[qid])
 	} else if !ok {
 		writeErr(fmt.Errorf("Quiz session does not exist"), w)
