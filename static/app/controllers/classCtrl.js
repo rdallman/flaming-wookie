@@ -11,6 +11,8 @@ classApp.controller('ClassController', function ($scope, $http, $route, $routePa
     name: "",
     students: []
   }
+  // used for determining buttons on the view
+  $scope.editing = false;
 
   // class list
   if ($routeParams.id === undefined) {
@@ -40,6 +42,7 @@ classApp.controller('ClassController', function ($scope, $http, $route, $routePa
         // we're editing the class
         // TODO better way to check path that has id param...
         if ($location.$$path.match(/(\/classes\/[0-9]+\/edit)/)) {
+          $scope.editing = true;
         }
       }
     }).error(function(data) {
@@ -49,7 +52,7 @@ classApp.controller('ClassController', function ($scope, $http, $route, $routePa
 
   $scope.createClass = function() {
     if ($location.$$path.match(/(\/classes\/[0-9]+\/edit)/)) {
-
+      $location.path('/main');
     }
     else {
       
@@ -68,7 +71,7 @@ classApp.controller('ClassController', function ($scope, $http, $route, $routePa
       $http({
         method: 'POST',
         url: '/classes/' + $routeParams.id + '/student',
-        data: angular.toJson({cid: $routeParams.id, email: email, fname: firstName, lname: lastName}),
+        data: angular.toJson({cid: parseInt($routeParams.id), email: email, fname: firstName, lname: lastName}),
         headers: {'Content-Type': 'application/json'}
       }).success(function(data) {
         $scope.class.students.push({email: email, name: {first: firstName, last: lastName}}); 

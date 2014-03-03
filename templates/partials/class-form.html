@@ -6,8 +6,9 @@
             <h1>Create Class</h1>
               <form class="form-inline" role="form">
                 <div class="form-group">
-                  <input type="text" class="form-control" ng-model="class.name" placeholder="Class Name...">
-                  <button class="btn btn-default" ng:click="createClass()">Create Class</button>
+                  <input ng-disabled="editing" type="text" class="form-control" ng-model="class.name" placeholder="Class Name...">
+                  <button ng-if="!editing" class="btn btn-default" ng:click="createClass()">Create Class</button>
+                  <button ng-if="editing" class="btn btn-default" ng:click="createClass()">Submit</button>
                 </div>
               </form>
                 <br />
@@ -26,7 +27,7 @@
                     <div class="row">
                         <div class="col-md-10">
                             <ul class="list-group">
-                                <li class="list-group-item" ng-repeat="student in studentList">{{ student.email }}</li>
+                              <li class="list-group-item" ng-repeat="student in class.students">{{ student.fname }} {{ student.lname }} - {{ student.email }}</li>
                             </ul>
                         </div>
                     </div>
@@ -38,6 +39,6 @@
 
     
 
-{{ class }}
+<!--{{ class }}-->
 </div>
 
