@@ -24,6 +24,10 @@ dashboardApp.config(['$routeProvider',
                           templateUrl: '/templates/partials/quiz.html',
                           controller: 'QuizController'
                         }).
+                        when('/quiz/:id/grades', {
+                          templateUrl: '/templates/partials/grades.html',
+                          controller: 'QuizController'
+                        }).
                         when('/classes', {
                           templateUrl: '/templates/partials/classes.html',
                           controller: 'ClassController'
