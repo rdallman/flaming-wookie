@@ -109,27 +109,38 @@ func handleAddStudents(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 	j := struct {
-		Name string `json:"name"`
-		Sid  string `json:"sid"`
+		Cid   int    `json:"cid"`
+		Email string `json:"email"`
+		Fname string `json:"fname"`
+		Lname string `json:"lname"`
 	}{}
 	err := decoder.Decode(&j)
 	if writeErr(err, w) {
 		return
 	}
 
+	student := make(map[string]string)
+	student["email"] = j.Email
+	student["fname"] = j.Fname
+	student["lname"] = j.Lname
+
 	//TODO ->> json
-	var jstring string
-	err = db.QueryRow(`SELECT students FROM classes WHERE uid = $1 AND cid = $2`, user.Uid, cid).Scan(&jstring)
+	var jstring, cname string
+	err = db.QueryRow(`SELECT name, students FROM classes WHERE uid = $1 AND cid = $2`, user.Uid, cid).Scan(&cname, &jstring)
 	if writeErr(err, w) {
 		return
 	}
 
-	var students map[string]string
+	// create student id
+	student = createStudentId(student)
+
+	var students []map[string]string
 	err = json.Unmarshal([]byte(jstring), &students)
 	if writeErr(err, w) {
 		return
 	}
-	students[j.Sid] = j.Name
+	//students[j.Sid] = j.Name
+	students = append(students, student)
 
 	js, err := json.Marshal(students)
 	if writeErr(err, w) {
@@ -140,6 +151,8 @@ func handleAddStudents(w http.ResponseWriter, r *http.Request) {
 	if writeErr(err, w) {
 		return
 	}
+
+	go sendStudentClassEmail(j.Cid, cname, student)
 
 	writeSuccess(w)
 }

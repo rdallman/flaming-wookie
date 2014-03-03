@@ -24,6 +24,10 @@ dashboardApp.config(['$routeProvider',
                           templateUrl: '/templates/partials/quiz.html',
                           controller: 'QuizController'
                         }).
+                        when('/quiz/:id/grades', {
+                          templateUrl: '/templates/partials/grades.html',
+                          controller: 'QuizController'
+                        }).
                         when('/classes', {
                           templateUrl: '/templates/partials/classes.html',
                           controller: 'ClassController'
@@ -31,6 +35,14 @@ dashboardApp.config(['$routeProvider',
                         when('/classes/:id', {
                           templateUrl: '/templates/partials/class.html',
                           controller: 'ClassController'
+                        }).
+                        when('/classes/:id/edit', {
+                          templateUrl: '/templates/partials/class-form.html',
+                          controller: 'ClassController'
+                        }).
+                        when('/quizzes', {
+                          templateUrl: '/templates/partials/quizzes.html',
+                          controller: 'QuizController'
                         }).
                         otherwise({
                           redirectTo: '/main'

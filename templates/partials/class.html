@@ -1,9 +1,9 @@
 
 <div id="slides" ng-controller="ClassController">
-  <h1>{{ myClass.name }}</h1>
+  <h1>{{ class.name }}</h1>
   <br />
-  <div ng-repeat="s in myClass.students" >
-    <span>{{ s.name.first }} {{ s.name.last }} | {{s.email}}</span>
+  <div ng-repeat="s in class.students" >
+    <span>{{ s.fname }} {{ s.lname }} - {{s.email}}</span>
   </div>
 </div>
 </div>

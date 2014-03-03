@@ -12,6 +12,7 @@
 					<ul class="list-group">
 						<li class="list-group-item" ng-repeat="class in classList">
 							<a style="color:white;" href="#/classes/{{ class.cid }}">{{ class.name }}</a>
+              <a class="pull-right" href="#/classes/{{ class.cid }}/edit"><i class="fa fa-cog"></i></a>
 						</li>
 					</ul>
 				</div>
@@ -30,7 +31,7 @@
 					<ul class="list-group">
 						<li class="list-group-item" ng-repeat="quiz in quizList">
 							<a style="color:white;" href="#/quiz/{{ quiz.qid }}">{{ quiz.title }}<span style="color:#333"> for {{ quiz.name }}</span></a>
-
+              <a class="pull-right" href="#/quiz/{{ quiz.qid }}/grades"><i class="fa fa-tasks"></i></a>
 						</li>
 					</ul>
 				</div>

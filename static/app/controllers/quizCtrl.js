@@ -22,6 +22,8 @@ quizApp.controller('QuizController', function ($scope, $http, $route, $routePara
     grades: {}
   };
 
+  $scope.quizlist = []
+
   if ($routeParams.id !== undefined) {	
     $http({
       method: 'GET',
@@ -33,6 +35,17 @@ quizApp.controller('QuizController', function ($scope, $http, $route, $routePara
       }
     }).error(function(data) {
       // handle error
+    });
+  }
+
+  if ($location.$$path === "/quizzes") {
+    $http({
+      method: 'GET',
+      url: '/quiz'
+    }).success(function(data) {
+      $scope.quizlist = data["info"]
+    }).error(function(data) {
+
     });
   }
 
@@ -83,9 +96,9 @@ quizApp.controller('QuizController', function ($scope, $http, $route, $routePara
   $scope.postQuiz = function() {
     $http({
       method: 'POST', 
-    url: '/classes/'+$scope.mclass.cid+'/quiz', 
-    data: angular.toJson($scope.quiz),
-    headers: {'Content-Type': 'application/json'}
+      url: '/classes/'+$scope.mclass.cid+'/quiz', 
+      data: angular.toJson($scope.quiz),
+      headers: {'Content-Type': 'application/json'}
     });
     $location.path('/main');
   }
