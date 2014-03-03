@@ -61,7 +61,7 @@ func handleCreateClass(w http.ResponseWriter, r *http.Request) {
 	for _, s := range j.Students {
 		go sendStudentClassEmail(cid, j.Name, s)
 	}
-	writeSuccess(w)
+	writeSuccess(w, cid)
 }
 
 func createStudentId(student map[string]string) map[string]string {
@@ -256,14 +256,19 @@ func handleQuizCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// insert the quiz
-	_, err = db.Exec(`
+	//_, err = db.Exec(`
+	//INSERT INTO quiz (info, cid)
+	//VALUES($1, $2)
+	//`, string(info), cid)
+	var qid int
+	err = db.QueryRow(`
     INSERT INTO quiz (info, cid)
-		VALUES($1, $2)
-    `, string(info), cid)
+		VALUES($1, $2) RETURNING qid
+    `, string(info), cid).Scan(&qid)
 	if writeErr(err, w) {
 		return
 	}
-	writeSuccess(w)
+	writeSuccess(w, qid)
 }
 
 // handleQuizGet qets the quizID from the end of the given URL w
