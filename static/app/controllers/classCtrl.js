@@ -111,4 +111,15 @@ classApp.controller('ClassController', function ($scope, $http, $route, $routePa
   $scope.removeStudent = function(student) {
     $scope.class.students.splice($scope.class.students.indexOf(student), 1);
   }
+
+  $scope.deleteQuiz = function(qid, index) {
+    $http({
+      method: 'DELETE',
+      url: '/quiz/' + qid
+    }).success(function(data) {
+      $scope.quizList.splice(index, 1);
+    }).error(function(data) {
+        alert("Error: Could not delete quiz");
+      });
+  }
 });
