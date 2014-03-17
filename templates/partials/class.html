@@ -1,11 +1,7 @@
 <div id="slides" ng-controller="ClassController">
-  <h1>{{ class.name }}</h1>
-  <br />
-  <div ng-repeat="s in class.students" >
-  		<span>{{ s.fname }} {{ s.lname }} - {{s.email}}</span>
-  </div>
-<br />
-<div class="row">
+	<h1>{{ class.name }}</h1>
+  	<br />
+	<div class="row">
 		<div class="col-md-8">
 			<section class="widget">
 				<header>
@@ -16,12 +12,16 @@
 					<ul class="list-group">
 						<li class="list-group-item" ng-repeat="quiz in quizList">
 							<a style="color:white;" href="#/quiz/{{ quiz.qid }}">{{ quiz.title }}</a>
+              				<a class="pull-right" ng-click="deleteQuiz(quiz.qid, $index)" style="PADDING-LEFT: 5px"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
               				<a class="pull-right" href="#/quiz/{{ quiz.qid }}/grades"><i class="fa fa-tasks"></i></a>
-              				<a class="pull-right" ng-click="deleteQuiz(quiz.qid, $index)"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
 						</li>
 					</ul>
 				</div>
 			</section>
 		</div>
 	</div>
+	<br />
+	<div ng-repeat="s in class.students" >
+  		<span>{{ s.fname }} {{ s.lname }} - {{s.email}}</span>
+ 	 </div>
 </div>
