@@ -373,6 +373,7 @@ func handleQuizList(w http.ResponseWriter, r *http.Request) {
       FROM quiz, classes
       WHERE classes.uid = $1
       AND classes.cid = $2
+      AND quiz.cid = classes.cid
       `, auth.Uid, cid)
 	} else {
 		rows, err = db.Query(`
