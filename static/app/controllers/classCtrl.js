@@ -6,6 +6,7 @@ classApp.controller('ClassController', function ($scope, $http, $route, $routePa
 
   $scope.classes = [];
   $scope.id = -1; 
+  $scope.quizList = [];
 
   $scope.class = {
     name: "",
@@ -47,6 +48,21 @@ classApp.controller('ClassController', function ($scope, $http, $route, $routePa
       }
     }).error(function(data) {
       // handle error
+    });
+
+    // get quizzes
+    $http({
+      method: 'GET',
+      url: '/classes/' + $routeParams.id + '/quiz'
+    }).
+    success(function(data) {
+      // angular.forEach(data, function(value, key) {
+      //   this.push({"Title": key, "id": value});
+      // }, $scope.classes);
+      $scope.quizList = data.info
+    }).
+    error(function(data) {
+      // handle
     });
   }
 
@@ -94,5 +110,16 @@ classApp.controller('ClassController', function ($scope, $http, $route, $routePa
   }
   $scope.removeStudent = function(student) {
     $scope.class.students.splice($scope.class.students.indexOf(student), 1);
+  }
+
+  $scope.deleteQuiz = function(qid, index) {
+    $http({
+      method: 'DELETE',
+      url: '/quiz/' + qid
+    }).success(function(data) {
+      $scope.quizList.splice(index, 1);
+    }).error(function(data) {
+        alert("Error: Could not delete quiz");
+      });
   }
 });
