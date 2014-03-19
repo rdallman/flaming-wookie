@@ -10,7 +10,7 @@ dashboardApp.config(['$routeProvider',
                       $routeProvider.
                         when('/main', {
                           templateUrl: '/templates/partials/main.html',
-                          controller: 'MainController'
+                          controller: 'ClassController'
                         }).
                         when('/quiz-create', {
                           templateUrl: '/templates/partials/quiz-form.html',
@@ -63,43 +63,5 @@ filters.filter('abc', function() {
   return function(input) {
     return String.fromCharCode(input + 65);
   };
-});
-
-// main controller for the main dashboard page
-// TODO pull out into another file
-dashboardApp.controller('MainController', function($scope, $http) {
-  $scope.classList = [];
-  $scope.quizList = [];
-  
-  // get classes
-  $http({
-    method: 'GET',
-    url: '/classes'
-  }).
-  success(function(data) {
-    // angular.forEach(data, function(value, key) {
-    //   this.push({"Title": key, "id": value});
-    // }, $scope.classes);
-
-    $scope.classList = data.info
-  }).
-  error(function(data) {
-    // handle
-  });
-
-  // get quizzes
-  $http({
-    method: 'GET',
-    url: '/quiz'
-  }).
-  success(function(data) {
-    // angular.forEach(data, function(value, key) {
-    //   this.push({"Title": key, "id": value});
-    // }, $scope.classes);
-    $scope.quizList = data.info
-  }).
-  error(function(data) {
-    // handle
-  });
 });
 

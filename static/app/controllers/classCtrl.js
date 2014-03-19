@@ -4,7 +4,7 @@ var classApp = angular.module('classControllers', ['ngRoute']);
 
 classApp.controller('ClassController', function ($scope, $http, $route, $routeParams, $location) {
 
-  $scope.classes = [];
+  $scope.classList = [];
   $scope.id = -1; 
   $scope.quizList = [];
 
@@ -25,7 +25,7 @@ classApp.controller('ClassController', function ($scope, $http, $route, $routePa
     console.log(data);  
       angular.forEach(data["info"], function(value, key) {
         this.push(value)
-      }, $scope.classes);
+      }, $scope.classList);
     }).
     error(function(data) {
       // handle
