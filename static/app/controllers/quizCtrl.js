@@ -1,7 +1,7 @@
 // quiz
-var quizApp = angular.module('quizControllers', ['ngRoute']);
+//var quizApp = angular.module('quizControllers', ['ngRoute']);
 
-quizApp.controller('QuizController', function ($scope, $http, $route, $routeParams, $location) {
+angular.module('dashboardApp').controller('QuizController', function ($scope, $http, $route, $routeParams, $location) {
 
   // used for traversing quiz in html
   $scope.current = -1;

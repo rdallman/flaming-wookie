@@ -1,7 +1,7 @@
-// sets up app for angular, includes modules
+// sets up the module for the entire app
 // TODO better/cleaner way of including modules?
 // TODO dependencies without including every file in html?
-var dashboardApp = angular.module('dashboardApp', ['ngRoute', 'quizControllers', 'classControllers', 'customFilters']);
+var dashboardApp = angular.module('dashboardApp', ['ngRoute', 'customFilters']);
 
 // routes handler for angular
 // TODO better way of setting up routes? also resource handling
