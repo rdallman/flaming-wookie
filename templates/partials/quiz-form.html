@@ -28,16 +28,18 @@
             <input type="text" class="form-control" ng-model="quizTitle" ng-change="changeTitle(quizTitle)" placeholder="Title...">
           </div>
         </form>
-        <div class="btn-group">
-          <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-            <span ng-if="mclass.name === ''">Pick a class</span>
-            <span ng-if="mclass.name">{{ mclass.name }}</span>
-            <span class="caret"></span>
-          </button>
-          <ul class="dropdown-menu" role="menu">
-            <li><a ng-repeat="c in classes" ng:click="setClass($index)">{{ c.name }}</a></li>
-          </ul>
-        </div>
+        <!--
+           -<div class="btn-group">
+           -  <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+           -    <span ng-if="mclass.name === ''">Pick a class</span>
+           -    <span ng-if="mclass.name">{{ mclass.name }}</span>
+           -    <span class="caret"></span>
+           -  </button>
+           -  <ul class="dropdown-menu" role="menu">
+           -    <li><a ng-repeat="c in classes" ng:click="setClass($index)">{{ c.name }}</a></li>
+           -  </ul>
+           -</div>
+           -->
       </div>
       <br /><br />
       <div class="row">

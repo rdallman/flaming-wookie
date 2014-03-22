@@ -13,6 +13,22 @@ angular.module('dashboardApp').factory('quizService', function($http) {
         method: 'DELETE',
         url: '/quiz/' + qid
       })
+    },
+
+    getQuiz: function(qid) {
+      return $http({
+        method: 'GET',
+        url: '/quiz/' + qid
+      })
+    },
+
+    createQuiz: function(cid, quiz) {
+      return $http({
+        method: 'POST',
+        url: '/classes/' + cid + '/quiz',
+        data: angular.toJson(quiz),
+        headers: {'Content-Type': 'application/json'}
+      });
     }
   }
 });

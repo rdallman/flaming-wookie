@@ -1,17 +1,12 @@
 // quiz
 //var quizApp = angular.module('quizControllers', ['ngRoute']);
 
-angular.module('dashboardApp').controller('QuizController', function ($scope, $http, $route, $routeParams, $location) {
+angular.module('dashboardApp').controller('QuizController', function (quizService, $scope, $http, $route, $routeParams, $location) {
 
   // used for traversing quiz in html
   $scope.current = -1;
   $scope.id = -1;
-
-  //for creating a class
-  $scope.mclass = {
-    name: "",
-  cid: -1,
-  };
+  $scope.classId;
 
   $scope.classes = [];
 
@@ -25,10 +20,7 @@ angular.module('dashboardApp').controller('QuizController', function ($scope, $h
   $scope.quizlist = []
 
   if ($routeParams.id !== undefined) {	
-    $http({
-      method: 'GET',
-      url: '/quiz/' + $routeParams.id
-    }).success(function(data) {
+    quizService.getQuiz($routeParams.id).success(function(data) {
       if (data !== undefined) {
         $scope.quiz = data["info"]
         $scope.id = $routeParams.id;
@@ -49,20 +41,9 @@ angular.module('dashboardApp').controller('QuizController', function ($scope, $h
     });
   }
 
-  if ($location.$$path === "/quiz-create") {
-    $http({
-      method: 'GET',
-      url: '/classes'
-    }).success(function(data) {
-      if (data !== undefined) {
-        $scope.classes = data["info"]
-      }
-    }).error(function(data) {
-    });
-  }
-
-  $scope.setClass = function(index) {
-    $scope.mclass = $scope.classes[index]
+  if ($location.$$path.match(/(\/classes\/[0-9]+\/new-quiz)/)) {
+    // creating a quiz
+    $scope.classId = $routeParams.cid;
   }
 
   $scope.addQuestion = function(textIn) {
@@ -94,12 +75,7 @@ angular.module('dashboardApp').controller('QuizController', function ($scope, $h
   }
 
   $scope.postQuiz = function() {
-    $http({
-      method: 'POST', 
-      url: '/classes/'+$scope.mclass.cid+'/quiz', 
-      data: angular.toJson($scope.quiz),
-      headers: {'Content-Type': 'application/json'}
-    });
+    quizService.createQuiz($scope.classId, $scope.quiz);
     $location.path('/main');
   }
 
