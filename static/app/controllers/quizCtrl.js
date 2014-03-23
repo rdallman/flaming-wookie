@@ -1,12 +1,13 @@
 // quiz
 //var quizApp = angular.module('quizControllers', ['ngRoute']);
 
-angular.module('dashboardApp').controller('QuizController', function (quizService, $scope, $http, $route, $routeParams, $location) {
+angular.module('dashboardApp').controller('QuizController', function (quizService, classService, $scope, $http, $route, $routeParams, $location) {
 
   // used for traversing quiz in html
   $scope.current = -1;
   $scope.id = -1;
   $scope.classId;
+  $scope.className;
 
   $scope.classes = [];
 
@@ -44,6 +45,13 @@ angular.module('dashboardApp').controller('QuizController', function (quizServic
   if ($location.$$path.match(/(\/classes\/[0-9]+\/new-quiz)/)) {
     // creating a quiz
     $scope.classId = $routeParams.cid;
+    classService.getClass($scope.classId).success(function(data){
+      if (data !== undefined) {
+        $scope.className = data["info"]["name"];
+      }
+    }).error(function(data){
+      //handle error
+    });
   }
 
   $scope.addQuestion = function(textIn) {

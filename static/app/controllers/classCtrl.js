@@ -59,7 +59,7 @@ angular.module('dashboardApp').controller('ClassController', function (classServ
   $scope.createClass = function() {
     if ($location.$$path.match(/(\/classes\/[0-9]+\/edit)/)) {
       // TODO save class updates
-      $location.path('/main');
+      $location.path('/classes/' + $routeParams.id);
     }
     else {
       classService.createClass($scope.class);
@@ -83,10 +83,6 @@ angular.module('dashboardApp').controller('ClassController', function (classServ
 
   }
 
-
-  $scope.changeName = function(text) {
-    $scope.class.name = text;
-  }
   // TODO add in check for deleting from class if editting existing class
   $scope.removeStudent = function(student) {
     $scope.class.students.splice($scope.class.students.indexOf(student), 1);
