@@ -1,19 +1,24 @@
-<div id="slides" ng-controller="ClassController">
-	<h1>{{ class.name }}</h1>
+<div ng-controller="ClassController">
+	<div class="row">
+		<div class="col-md-8">
+			<h1>{{ class.name }}</h1>
+			<a href="#/classes/{{ id }}/edit" class="btn btn-large btn-primary pull-left">Edit Class</a>
+		</div>
+	</div>
   	<br />
 	<div class="row">
 		<div class="col-md-8">
 			<section class="widget">
 				<header>
-             	 <h4 style="float:left;font-size:24px;">Quizzes</h4>
-               <a style="float:right"href="#/classes/{{ id }}/new-quiz" class="btn btn-large btn-primary pull-right">Create Quiz</a>
+             	 	<h4 style="float:left;font-size:24px;">Quizzes</h4>
+               		<a style="float:right"href="#/classes/{{ id }}/new-quiz" class="btn btn-large btn-primary pull-right">Create Quiz</a>
 				</header>
 				<div style="margin-top: 40px;"class="body">
 					<ul class="list-group">
 						<li class="list-group-item" ng-repeat="quiz in quizList">
 							<a style="color:white;" href="#/quiz/{{ quiz.qid }}">{{ quiz.title }}</a>
-              				<a class="pull-right" ng-click="deleteQuiz(quiz.qid, $index)" style="PADDING-LEFT: 5px"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
-              				<a class="pull-right" href="#/quiz/{{ quiz.qid }}/grades"><i class="fa fa-tasks"></i></a>
+              				<a class="btn btn-danger pull-right" ng-click="deleteQuiz(quiz.qid, $index)"><i class="fa fa-trash-o fa-lg"></i> Delete Quiz</a>
+              				<a class="btn btn-primary pull-right" href="#/quiz/{{ quiz.qid }}/grades"><i class="fa fa-tasks"></i> View Quiz Results</a>        		
 						</li>
 					</ul>
 				</div>
