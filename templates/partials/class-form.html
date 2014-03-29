@@ -4,10 +4,10 @@
         <section class="widget">
           <div>
             <h1 ng-if="!editing">Create Class</h1>
-            <h1 ng-if="editing">Edit Class</h1>
+            <h1 ng-if="editing">{{class.name}}: Edit Class</h1>
               <form class="form-inline" role="form">
                 <div class="form-group">
-                  <input ng-disabled="editing" type="text" class="form-control" ng-model="class.name" placeholder="Class Name...">
+                  <input ng-if="!editing" type="text" class="form-control" ng-model="class.name" placeholder="Class Name...">
                   <button ng-if="!editing" class="btn btn-default" ng:click="createClass()">Create Class</button>
                   <button ng-if="editing" class="btn btn-default" ng:click="createClass()">Submit</button>
                 </div>
