@@ -5,6 +5,8 @@ import (
 	"html/template"
 	"net/http"
 
+	"code.google.com/p/go.net/websocket"
+
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
@@ -76,6 +78,10 @@ func main() {
 	//Javascript pages
 	r.HandleFunc("/dashboard/", handlePage("dashboard")).Methods("GET")
 	//TODO browser "student" client
+
+	//websocket in testing
+	r.Handle("/takeme/{id:[0-9]+}", websocket.Handler(studServer))
+	r.Handle("/giveme/{id:[0-9]+}", websocket.Handler(teachServer))
 
 	http.Handle("/", r)
 	serveFile("/favicon.ico", "./favicon.ico")
