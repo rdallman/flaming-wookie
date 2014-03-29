@@ -62,24 +62,35 @@ angular.module('dashboardApp').controller('ClassController', function (classServ
       $location.path('/classes/' + $routeParams.id);
     }
     else {
-      classService.createClass($scope.class);
-      $location.path('/main');
+      if ($scope.classform.$valid) {
+        alert("Valid Class");
+        classService.createClass($scope.class);
+        $location.path('/main');
+      }
     }
   }
 
-  $scope.addStudent = function(email, firstName, lastName) {
+  $scope.addStudent = function() {
     if ($location.$$path.match(/(\/classes\/[0-9]+\/edit)/)) {
-      classService.addStudent(email, firstName, lastName).success(function(data) {
-        $scope.class.students.push({email: email, name: {first: firstName, last: lastName}});
-      }).error(function(data) {
-        alert("Error: Could not add student");
-      });
+      if ($scope.studentform.$valid) {
+        classService.addStudent($scope.student.email, $scope.student.fname, $scope.student.lname).success(function(data) {
+          $scope.class.students.push({email: $scope.student.email, name: {first: $scope.student.fname, last: $scope.student.lname}});
+          $scope.student.email = "";
+          $scope.student.fname = "";
+          $scope.student.lname = "";
+        }).error(function(data) {
+          alert("Error: Could not add student");
+        });
+      }
     }
     else {
-      $scope.class.students.push({email: email, fname: firstName, lname: lastName});
-      $scope.student.email = "";
-      $scope.student.fname = "";
-      $scope.student.lname = "";    }
+      if ($scope.studentform.$valid) {
+        $scope.class.students.push({email: $scope.student.email, fname: $scope.student.fname, lname: $scope.student.lname});
+        $scope.student.email = "";
+        $scope.student.fname = "";
+        $scope.student.lname = "";
+      }
+    }
 
   }
 

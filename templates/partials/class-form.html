@@ -5,15 +5,15 @@
           <div>
             <h1 ng-if="!editing">Create Class</h1>
             <h1 ng-if="editing">{{class.name}}: Edit Class</h1>
-              <form class="form-inline" role="form" novalidate>
+              <form class="form-inline" role="form" name="classform">
                 <div class="form-group">
-                  <input ng-if="!editing" type="text" class="form-control" ng-model="class.name" placeholder="Class Name...">
+                  <input ng-if="!editing" ng-minlength=1 type="text" class="form-control" ng-model="class.name" placeholder="Class Name..." required>
                   <button ng-if="!editing" class="btn btn-default" ng:click="createClass()">Create Class</button>
                   <button ng-if="editing" class="btn btn-default" ng:click="createClass()">Submit</button>
                 </div>
               </form>
                 <br />
-                <form class="form-inline" role="form">
+                <form class="form-inline" role="form" name="studentform">
                     <div class="form-group">
                         <input type="email" class="form-control" ng-model="student.email" placeholder="Student Email..." required>
                     </div>
@@ -23,7 +23,7 @@
                     <div class="form-group">
                         <input type="text" ng-minlength=1 class="form-control" ng-model="student.lname" placeholder="Student Last Name..." required> 
                     </div>
-                    <button class="btn btn-default" ng:click="addStudent(student.email, student.fname, student.lname)">Add Student</button>
+                    <button class="btn btn-default" ng:click="addStudent()">Add Student</button>
                     </form>
                     <div class="row">
                         <div class="col-md-10">
@@ -40,6 +40,6 @@
 
     
 
-<!--{{ class }}-->
+{{ class }}
 </div>
 

@@ -54,13 +54,11 @@ angular.module('dashboardApp').controller('QuizController', function (quizServic
     });
   }
 
-  $scope.addQuestion = function(textIn) {
-    $scope.quiz.questions.push({text: textIn, correct: -1, answers: []});
-    $scope.newQuestion = "";
-  }
-
-  $scope.changeTitle = function(text) {
-    $scope.quiz.title = text;
+  $scope.addQuestion = function() {
+    if ($scope.questionform.$valid) {
+      $scope.quiz.questions.push({text: $scope.question.text, correct: -1, answers: []});
+      $scope.question.text = "";
+    }
   }
 
   $scope.addAnswer = function(question, text) {
@@ -75,7 +73,6 @@ angular.module('dashboardApp').controller('QuizController', function (quizServic
 
   $scope.removeQuestion = function(question) {
     $scope.quiz.questions.splice($scope.quiz.questions.indexOf(question), 1);
-
   }
 
   $scope.removeAnswer = function(question, answer) {
@@ -83,8 +80,10 @@ angular.module('dashboardApp').controller('QuizController', function (quizServic
   }
 
   $scope.postQuiz = function() {
-    quizService.createQuiz($scope.classId, $scope.quiz);
-    $location.path('/main');
+    if ($scope.quizform.$valid) {
+      quizService.createQuiz($scope.classId, $scope.quiz);
+      $location.path('/main');
+    }
   }
 
   // start the quiz, send state of 0 to the server
