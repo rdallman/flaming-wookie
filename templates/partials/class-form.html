@@ -5,7 +5,7 @@
           <div>
             <h1 ng-if="!editing">Create Class</h1>
             <h1 ng-if="editing">{{class.name}}: Edit Class</h1>
-              <form class="form-inline" role="form">
+              <form class="form-inline" role="form" novalidate>
                 <div class="form-group">
                   <input ng-if="!editing" type="text" class="form-control" ng-model="class.name" placeholder="Class Name...">
                   <button ng-if="!editing" class="btn btn-default" ng:click="createClass()">Create Class</button>
@@ -15,13 +15,13 @@
                 <br />
                 <form class="form-inline" role="form">
                     <div class="form-group">
-                        <input type="text" class="form-control" ng-model="student.email" placeholder="Student Email...">
+                        <input type="email" class="form-control" ng-model="student.email" placeholder="Student Email..." required>
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" ng-model="student.fname" placeholder="Student First Name...">
+                        <input type="text" ng-minlength=1 class="form-control" ng-model="student.fname" placeholder="Student First Name..." required>
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" ng-model="student.lname" placeholder="Student Last Name..."> 
+                        <input type="text" ng-minlength=1 class="form-control" ng-model="student.lname" placeholder="Student Last Name..." required> 
                     </div>
                     <button class="btn btn-default" ng:click="addStudent(student.email, student.fname, student.lname)">Add Student</button>
                     </form>
