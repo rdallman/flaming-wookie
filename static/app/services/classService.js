@@ -1,7 +1,7 @@
 /*
  * returning a ton of $http promises, need to change to handling of class data more directly?
  * */
-angular.module('dashboardApp').factory('classService', function($http) {
+angular.module('dashboardApp').factory('classService', function($http, $route, $routeParams) {
 
   return {
     getClass: function(id) {
@@ -31,7 +31,7 @@ angular.module('dashboardApp').factory('classService', function($http) {
       return $http({
         method: 'POST',
         url: '/classes/' + $routeParams.id + '/student',
-        data: angular.toJson({cid: parseInt($routeParams.id), email: email, fname: firstName, lname: lastName}),
+        data: angular.toJson({cid: parseInt($routeParams.id), email: email, fname: fname, lname: lname}),
         headers: {'Content-Type': 'application/json'}
       })
     }

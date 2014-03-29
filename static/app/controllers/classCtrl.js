@@ -74,7 +74,7 @@ angular.module('dashboardApp').controller('ClassController', function (classServ
     if ($location.$$path.match(/(\/classes\/[0-9]+\/edit)/)) {
       if ($scope.studentform.$valid) {
         classService.addStudent($scope.student.email, $scope.student.fname, $scope.student.lname).success(function(data) {
-          $scope.class.students.push({email: $scope.student.email, name: {first: $scope.student.fname, last: $scope.student.lname}});
+          $scope.class.students.push({email: $scope.student.email, fname: $scope.student.fname, lname: $scope.student.lname});
           $scope.student.email = "";
           $scope.student.fname = "";
           $scope.student.lname = "";

@@ -1,3 +1,11 @@
+<style>
+input.ng-invalid {
+  border: 1px solid red;
+}
+input.ng-valid {
+  border: 1px solid green;
+}
+</style>
 <div ng-controller="ClassController">
     <div class="row">
       <div class="col-md-10">
@@ -5,7 +13,7 @@
           <div>
             <h1 ng-if="!editing">Create Class</h1>
             <h1 ng-if="editing">{{class.name}}: Edit Class</h1>
-              <form class="form-inline" role="form" name="classform">
+              <form class="form-inline" role="form" name="classform" novalidate>
                 <div class="form-group">
                   <input ng-if="!editing" ng-minlength=1 type="text" class="form-control" ng-model="class.name" placeholder="Class Name..." required>
                   <button ng-if="!editing" class="btn btn-default" ng:click="createClass()">Create Class</button>
@@ -13,7 +21,7 @@
                 </div>
               </form>
                 <br />
-                <form class="form-inline" role="form" name="studentform">
+                <form class="form-inline" role="form" name="studentform" novalidate>
                     <div class="form-group">
                         <input type="email" class="form-control" ng-model="student.email" placeholder="Student Email..." required>
                     </div>
