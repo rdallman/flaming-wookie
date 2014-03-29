@@ -32,9 +32,18 @@
     <div class="wrap">
       <header class="page-header">
         <div class="navbar">
-          <ul class="nav navbar-nav navbar-right pull-right">
-            <li><<<.Email>>></li>
-          </ul>
+          <div class="nav navbar-nav navbar-right">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+              <<<.Email>>><span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+              <!--<li><a href="/dashboard/">Dashboard</a></li>-->
+              <li><a href="/logmeout">Logout</a></li>
+            </ul>
+          </div>
+          <!--<ul class="nav navbar-nav navbar-right pull-right">-->
+            <!--<li><<<.Email>>></li>-->
+          <!--</ul>-->
         </div>
       </header>
       <div class="container content" ng-view>
