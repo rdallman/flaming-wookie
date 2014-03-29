@@ -1,7 +1,7 @@
-// sets up app for angular, includes modules
+// sets up the module for the entire app
 // TODO better/cleaner way of including modules?
 // TODO dependencies without including every file in html?
-var dashboardApp = angular.module('dashboardApp', ['ngRoute', 'quizControllers', 'classControllers', 'customFilters']);
+var dashboardApp = angular.module('dashboardApp', ['ngRoute', 'customFilters']);
 
 // routes handler for angular
 // TODO better way of setting up routes? also resource handling
@@ -10,7 +10,7 @@ dashboardApp.config(['$routeProvider',
                       $routeProvider.
                         when('/main', {
                           templateUrl: '/templates/partials/main.html',
-                          controller: 'MainController'
+                          controller: 'ClassController'
                         }).
                         when('/quiz-create', {
                           templateUrl: '/templates/partials/quiz-form.html',
@@ -36,13 +36,17 @@ dashboardApp.config(['$routeProvider',
                           templateUrl: '/templates/partials/class.html',
                           controller: 'ClassController'
                         }).
+                        when('/classes/:cid/quiz/:qid', {
+                          templateUrl: '/templates/partials/quiz.html',
+                          controller: 'QuizController'
+                        }).
+                        when('/classes/:cid/new-quiz', {
+                          templateUrl: '/templates/partials/quiz-form.html',
+                          controller: 'QuizController'
+                        }).
                         when('/classes/:id/edit', {
                           templateUrl: '/templates/partials/class-form.html',
                           controller: 'ClassController'
-                        }).
-                        when('/quizzes', {
-                          templateUrl: '/templates/partials/quizzes.html',
-                          controller: 'QuizController'
                         }).
                         otherwise({
                           redirectTo: '/main'
@@ -63,43 +67,5 @@ filters.filter('abc', function() {
   return function(input) {
     return String.fromCharCode(input + 65);
   };
-});
-
-// main controller for the main dashboard page
-// TODO pull out into another file
-dashboardApp.controller('MainController', function($scope, $http) {
-  $scope.classList = [];
-  $scope.quizList = [];
-  
-  // get classes
-  $http({
-    method: 'GET',
-    url: '/classes'
-  }).
-  success(function(data) {
-    // angular.forEach(data, function(value, key) {
-    //   this.push({"Title": key, "id": value});
-    // }, $scope.classes);
-
-    $scope.classList = data.info
-  }).
-  error(function(data) {
-    // handle
-  });
-
-  // get quizzes
-  $http({
-    method: 'GET',
-    url: '/quiz'
-  }).
-  success(function(data) {
-    // angular.forEach(data, function(value, key) {
-    //   this.push({"Title": key, "id": value});
-    // }, $scope.classes);
-    $scope.quizList = data.info
-  }).
-  error(function(data) {
-    // handle
-  });
 });
 

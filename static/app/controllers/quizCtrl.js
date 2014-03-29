@@ -1,17 +1,13 @@
 // quiz
-var quizApp = angular.module('quizControllers', ['ngRoute']);
+//var quizApp = angular.module('quizControllers', ['ngRoute']);
 
-quizApp.controller('QuizController', function ($scope, $http, $route, $routeParams, $location) {
+angular.module('dashboardApp').controller('QuizController', function (quizService, classService, $scope, $http, $route, $routeParams, $location) {
 
   // used for traversing quiz in html
   $scope.current = -1;
   $scope.id = -1;
-
-  //for creating a class
-  $scope.mclass = {
-    name: "",
-  cid: -1,
-  };
+  $scope.classId;
+  $scope.className;
 
   $scope.classes = [];
 
@@ -25,10 +21,7 @@ quizApp.controller('QuizController', function ($scope, $http, $route, $routePara
   $scope.quizlist = []
 
   if ($routeParams.id !== undefined) {	
-    $http({
-      method: 'GET',
-      url: '/quiz/' + $routeParams.id
-    }).success(function(data) {
+    quizService.getQuiz($routeParams.id).success(function(data) {
       if (data !== undefined) {
         $scope.quiz = data["info"]
         $scope.id = $routeParams.id;
@@ -49,29 +42,23 @@ quizApp.controller('QuizController', function ($scope, $http, $route, $routePara
     });
   }
 
-  if ($location.$$path === "/quiz-create") {
-    $http({
-      method: 'GET',
-      url: '/classes'
-    }).success(function(data) {
+  if ($location.$$path.match(/(\/classes\/[0-9]+\/new-quiz)/)) {
+    // creating a quiz
+    $scope.classId = $routeParams.cid;
+    classService.getClass($scope.classId).success(function(data){
       if (data !== undefined) {
-        $scope.classes = data["info"]
+        $scope.className = data["info"]["name"];
       }
-    }).error(function(data) {
+    }).error(function(data){
+      //handle error
     });
   }
 
-  $scope.setClass = function(index) {
-    $scope.mclass = $scope.classes[index]
-  }
-
-  $scope.addQuestion = function(textIn) {
-    $scope.quiz.questions.push({text: textIn, correct: -1, answers: []});
-    $scope.newQuestion = "";
-  }
-
-  $scope.changeTitle = function(text) {
-    $scope.quiz.title = text;
+  $scope.addQuestion = function() {
+    if ($scope.questionform.$valid) {
+      $scope.quiz.questions.push({text: $scope.question.text, correct: -1, answers: []});
+      $scope.question.text = "";
+    }
   }
 
   $scope.addAnswer = function(question, text) {
@@ -86,7 +73,6 @@ quizApp.controller('QuizController', function ($scope, $http, $route, $routePara
 
   $scope.removeQuestion = function(question) {
     $scope.quiz.questions.splice($scope.quiz.questions.indexOf(question), 1);
-
   }
 
   $scope.removeAnswer = function(question, answer) {
@@ -94,13 +80,10 @@ quizApp.controller('QuizController', function ($scope, $http, $route, $routePara
   }
 
   $scope.postQuiz = function() {
-    $http({
-      method: 'POST', 
-      url: '/classes/'+$scope.mclass.cid+'/quiz', 
-      data: angular.toJson($scope.quiz),
-      headers: {'Content-Type': 'application/json'}
-    });
-    $location.path('/main');
+    if ($scope.quizform.$valid) {
+      quizService.createQuiz($scope.classId, $scope.quiz);
+      $location.path('/main');
+    }
   }
 
   // start the quiz, send state of 0 to the server
