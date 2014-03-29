@@ -25,27 +25,38 @@
       <ul class="side-nav">
         <li class="panel"><a href="#/main">Dashboard <i class="fa fa-home"></i></a></li>
         <li class="panel"><a href="#/classes">Classes <i class="fa fa-users"></i></a></li>
-        <li class="panel"><a href="#/quizzes">Quizzes <i class="fa fa-list-ol"></i></a></li>
+        <!--<li class="panel"><a href="#/quizzes">Quizzes <i class="fa fa-list-ol"></i></a></li>-->
       </ul>
     </nav>
 
     <div class="wrap">
       <header class="page-header">
         <div class="navbar">
-          <ul class="nav navbar-nav navbar-right pull-right">
-            <li><<<.Email>>></li>
-          </ul>
+          <div class="nav navbar-nav navbar-right">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+              <<<.Email>>><span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+              <!--<li><a href="/dashboard/">Dashboard</a></li>-->
+              <li><a href="/logmeout">Logout</a></li>
+            </ul>
+          </div>
+          <!--<ul class="nav navbar-nav navbar-right pull-right">-->
+            <!--<li><<<.Email>>></li>-->
+          <!--</ul>-->
         </div>
       </header>
       <div class="container content" ng-view>
 
-        
       </div>
     </div>
 
     <script src="/static/app/app.js"></script>
     <script src="/static/app/controllers/quizCtrl.js"></script>
     <script src="/static/app/controllers/classCtrl.js"></script>
+    <script src="/static/app/services/classService.js"></script>
+    <script src="/static/app/services/quizService.js"></script>
+    
 
 </body>
 </html>

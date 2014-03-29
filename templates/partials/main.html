@@ -1,37 +1,18 @@
-<div ng-controller="MainController">
+<div ng-controller="ClassController">
 	
 
-	<div class="row">
+<div class="row">
 		<div class="col-md-8">
 			<section class="widget">
 				<header>
-              		<h4 style="float:left;font-size:24px;">Classes</h4>
-              		<a style="float:right"href="#/class-form" class="btn btn-large btn-primary pull-right">Create Class</a>
+              <h4 style="float:left;font-size:24px;">Classes</h4>
+              <a style="float:right"href="#/class-form" class="btn btn-large btn-primary pull-right">Create Class</a>
 				</header>
 				<div style="margin-top: 40px;"class="body">
 					<ul class="list-group">
-						<li class="list-group-item" ng-repeat="class in classList">
-							<a style="color:white;" href="#/classes/{{ class.cid }}">{{ class.name }}</a>
-              				<a class="pull-right" href="#/classes/{{ class.cid }}/edit"><i class="fa fa-cog"></i></a>
-						</li>
-					</ul>
-				</div>
-			</section>
-		</div>
-	</div>
-	
-	<div class="row">
-		<div class="col-md-8">
-			<section class="widget">
-				<header>
-             	 <h4 style="float:left;font-size:24px;">Quizzes</h4>
-             	 <a style="float:right"href="#/quiz-create" class="btn btn-large btn-primary pull-right">Create Quiz</a>
-				</header>
-				<div style="margin-top: 40px;"class="body">
-					<ul class="list-group">
-						<li class="list-group-item" ng-repeat="quiz in quizList">
-							<a style="color:white;" href="#/quiz/{{ quiz.qid }}">{{ quiz.title }}<span style="color:#333"> for {{ quiz.name }}</span></a>
-              				<a class="pull-right" href="#/quiz/{{ quiz.qid }}/grades"><i class="fa fa-tasks"></i></a>
+						<li class="list-group-item" ng-repeat="c in classList">
+							<a style="color:white;" href="#/classes/{{ c.cid }}">{{ c.name }}</a>
+              				<a class="btn btn-primary pull-right" href="#/classes/{{ c.cid }}/edit"><i class="fa fa-cog"></i> Edit Class</a>
 						</li>
 					</ul>
 				</div>
