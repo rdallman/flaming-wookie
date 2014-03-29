@@ -26,6 +26,7 @@ func handleCreateClass(w http.ResponseWriter, r *http.Request) {
 	user := auth(r)
 	if user == nil {
 		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Create Class - User not authenticated")
 		return
 	}
 
@@ -54,8 +55,10 @@ func handleCreateClass(w http.ResponseWriter, r *http.Request) {
 	err = db.QueryRow(`INSERT INTO classes (name, uid, students) 
 		VALUES($1, $2, $3)  RETURNING cid`, j.Name, user.Uid, string(st)).Scan(&cid)
 	if writeErr(err, w) {
+		ERROR.Println("Create Class - INSERT uid=" + strconv.Itoa(user.Uid))
 		return
 	}
+	TRACE.Println("Create Class - INSERT cid=" + strconv.Itoa(cid))
 
 	//send student emails
 	for _, s := range j.Students {
@@ -69,20 +72,8 @@ func createStudentId(student map[string]string) map[string]string {
 	rand.Read(b)
 
 	str := base64.StdEncoding.EncodeToString(b)
-	fmt.Println(str)
+	//fmt.Println(str)
 	student["sid"] = str
-	// TODO(?): so the below would only provide entropy on 16 bytes (this is fine)
-	// that are being expanded when being encoded to string to nearly
-	// double their size, yet only providing half the entropy. (output == 33 bytes)
-	// We need a more efficient human-readable hash, such that we can provide
-	// entropy on all or most of 16 bytes and keep our output around 16 bytes.
-	//
-	// My proposal is above.
-	// It provides entropy on 12 bytes = 3.22626676 * 10^21
-	// With output of 16 bytes (somewhat reasonable -- open for discussion)
-
-	//hash := md5.Sum([]byte(fmt.Sprint(student["email"], uniuri.New())))
-	//student["sid"] = hex.EncodeToString(hash[0:16])
 	return student
 }
 
@@ -98,10 +89,11 @@ func createStudentId(student map[string]string) map[string]string {
 //    "name": string,
 //    "sid": string
 //  }
-func handleAddStudents(w http.ResponseWriter, r *http.Request) {
+func handleAddStudent(w http.ResponseWriter, r *http.Request) {
 	user := auth(r)
 	if user == nil {
 		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Add Student - User not authenticated")
 		return
 	}
 
@@ -128,6 +120,7 @@ func handleAddStudents(w http.ResponseWriter, r *http.Request) {
 	var jstring, cname string
 	err = db.QueryRow(`SELECT name, students FROM classes WHERE uid = $1 AND cid = $2`, user.Uid, cid).Scan(&cname, &jstring)
 	if writeErr(err, w) {
+		ERROR.Println("Add Student - SELECT cid=" + cid)
 		return
 	}
 
@@ -149,11 +142,13 @@ func handleAddStudents(w http.ResponseWriter, r *http.Request) {
 
 	_, err = db.Exec(`UPDATE classes SET students=$1 WHERE cid= $2`, string(js), cid)
 	if writeErr(err, w) {
+		ERROR.Println("Add Student - UPDATE cid=" + cid)
 		return
 	}
+	TRACE.Println("Add Student - UPDATE cid=" + cid)
 
 	go sendStudentClassEmail(j.Cid, cname, student)
-
+	
 	writeSuccess(w)
 }
 
@@ -161,6 +156,7 @@ func handleClassGet(w http.ResponseWriter, r *http.Request) {
 	auth := auth(r)
 	if auth == nil {
 		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Get Class - User not authenticated")
 		return
 	}
 
@@ -174,6 +170,7 @@ func handleClassGet(w http.ResponseWriter, r *http.Request) {
   `, cid).Scan(&name, &students)
 
 	if writeErr(err, w) {
+		ERROR.Println("Get Class - SELECT cid=" + cid)
 		return
 	}
 
@@ -198,6 +195,7 @@ func handleClassList(w http.ResponseWriter, r *http.Request) {
 	auth := auth(r)
 	if auth == nil {
 		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Get Class List - User not authenticated")
 		return
 	}
 
@@ -207,6 +205,7 @@ func handleClassList(w http.ResponseWriter, r *http.Request) {
     WHERE classes.uid = $1
   `, auth.Uid)
 	if writeErr(err, w) {
+		ERROR.Println("Get Class List - SELECT uid=" + strconv.Itoa(auth.Uid))
 		return
 	}
 	defer rows.Close()
@@ -252,6 +251,7 @@ func handleQuizCreate(w http.ResponseWriter, r *http.Request) {
 	user := auth(r)
 	if user == nil {
 		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Create Quiz - User not authenticated")
 		return
 	}
 
@@ -279,8 +279,10 @@ func handleQuizCreate(w http.ResponseWriter, r *http.Request) {
 		VALUES($1, $2) RETURNING qid
     `, string(info), cid).Scan(&qid)
 	if writeErr(err, w) {
+		ERROR.Println("Create Quiz - INSERT cid=" + cid)
 		return
 	}
+	TRACE.Println("Create Quiz - INSERT qid=" + strconv.Itoa(qid))
 	writeSuccess(w, qid)
 }
 
@@ -299,6 +301,7 @@ func handleQuizGet(w http.ResponseWriter, r *http.Request) {
 	var info string
 	err = db.QueryRow(`SELECT info FROM quiz WHERE qid=$1`, qID).Scan(&info)
 	if writeErr(err, w) {
+		ERROR.Println("Get Quiz - SELECT qid=" + strconv.Itoa(qID))
 		return
 	}
 
@@ -325,9 +328,9 @@ func handleQuizUpdate(w http.ResponseWriter, r *http.Request) {
 	} else {
 		_, err := db.Exec(`UPDATE quiz SET title=$1, info=$2, cid=$3 WHERE qid=$4`, title, info, cid, qid)
 		if err != nil {
-			fmt.Println(err)
+			ERROR.Println("Update Quiz - UPDATE qid=" + strconv.Itoa(qid))
 		} else {
-			fmt.Println("\nUpdated.")
+			TRACE.Println("Update Quiz - UPDATE qid=" + strconv.Itoa(qid))
 		}
 	}
 }
@@ -337,6 +340,7 @@ func handleQuizDelete(w http.ResponseWriter, r *http.Request) {
 	auth := auth(r)
 	if auth == nil {
 		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Delete Quiz - User not authenticated")
 		return
 	}
 	vars := mux.Vars(r)
@@ -346,8 +350,10 @@ func handleQuizDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err = db.Exec(`DELETE FROM quiz WHERE qid=$1`, qid)
 	if writeErr(err, w) {
+		ERROR.Println("Delete Quiz - DELETE qid=" + strconv.Itoa(qid))
 		return
 	}
+	TRACE.Println("Delete Quiz - DELETE qid=" + strconv.Itoa(qid))
 	writeSuccess(w)
 }
 
@@ -358,6 +364,7 @@ func handleQuizList(w http.ResponseWriter, r *http.Request) {
 	auth := auth(r)
 	if auth == nil {
 		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Get Quiz List - User not authenticated")
 		return
 	}
 
@@ -384,6 +391,7 @@ func handleQuizList(w http.ResponseWriter, r *http.Request) {
       `, auth.Uid)
 	}
 	if writeErr(err, w) {
+		ERROR.Println("Get Quiz List - SELECT")
 		return
 	}
 	defer rows.Close() //TODO these may not close if err != sql.NoRowsErr

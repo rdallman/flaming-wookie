@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"database/sql"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -33,16 +32,24 @@ func login(w http.ResponseWriter, r *http.Request) {
 	phash := string(hash[:]) //finicky
 
 	switch {
-	case err == sql.ErrNoRows, dbpw != phash:
+	case err == sql.ErrNoRows:
 		// TODO add flash messages
+		WARNING.Println("Login - SELECT email=" + inputEmail)
+		http.Redirect(w, r, "/login", 302)
+	case dbpw != phash:
+		// TODO add flash messages
+		WARNING.Println("Login - incorrect password email=" + inputEmail)
 		http.Redirect(w, r, "/login", 302)
 	case err != nil:
+		ERROR.Println("Login -", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	default:
 		err = createCookie(w, uid, inputEmail)
 		if err != nil {
+			ERROR.Println("Login - creating cookie:", err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		} else {
+			TRACE.Println("Login - uid=" + strconv.Itoa(uid))
 			http.Redirect(w, r, "/dashboard/#/main", 302)
 		}
 	}
@@ -57,7 +64,9 @@ func register(w http.ResponseWriter, r *http.Request) {
 
 	//check if any fields are blank or if passwords do not match
 	if email == "" || pass1 == "" || pass2 == "" || pass1 != pass2 {
-		fmt.Fprintf(w, "Invalid information")
+		WARNING.Println("Register - invalid information")
+		http.Redirect(w, r, "/register", 302)
+		//TODO flash messages
 		return //do not add to db
 	}
 	//check to see if email already exists in db
@@ -65,7 +74,8 @@ func register(w http.ResponseWriter, r *http.Request) {
 	err := db.QueryRow(`SELECT uid FROM users WHERE email=$1`, email).Scan(&id)
 	if id > 0 {
 		//FIXME flash message and try again, this is bad
-		fmt.Fprintf(w, "User already exists")
+		WARNING.Println("Register - user already exists uid=" + strconv.Itoa(id))
+		http.Redirect(w, r, "/register", 302)
 		return //do not add to db
 	}
 
@@ -80,11 +90,20 @@ func register(w http.ResponseWriter, r *http.Request) {
 	err = db.QueryRow(`INSERT INTO users (email, password, salt)
     VALUES($1, $2, $3) RETURNING uid`, email, phash, salt).Scan(&uid)
 	if err != nil {
+		ERROR.Println("Register - INSERT", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-
-	//send to login
-	http.Redirect(w, r, "/login", 302)
+	TRACE.Println("Register - INSERT uid=" + strconv.Itoa(uid))
+	
+	//log them in
+	err = createCookie(w, uid, email)
+	if err != nil {
+		ERROR.Println("Register-Login - creating cookie:" + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		TRACE.Println("Register-Login - uid=" + strconv.Itoa(uid))
+		http.Redirect(w, r, "/dashboard/#/main", 302)
+	}
 }
 
 // createCookie creates and sets a cookie for the user.

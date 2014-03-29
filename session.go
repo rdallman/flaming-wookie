@@ -64,14 +64,17 @@ func handleAnswer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, ok := qzSesh[qid]; !ok {
+		ERROR.Println("Handle Answer - quiz session does not exist qid=" + strconv.Itoa(qid))
 		writeErr(fmt.Errorf("Quiz session does not exist"), w)
 		return
 	}
 	if _, ok := qzSesh[qid].students[t.Id]; !ok {
+		ERROR.Println("Handle Answer - student id not in session qid=" + strconv.Itoa(qid) + " sid=" + t.Id)
 		writeErr(fmt.Errorf("User ID not in session"), w)
 		return
 	}
 	qzSesh[qid].replies <- UserReply{t.Id, t.Answer}
+	TRACE.Println("Handle Answer - qid=" + strconv.Itoa(qid) + " sid=" + t.Id)
 	writeSuccess(w)
 }
 
@@ -84,6 +87,7 @@ func handleAnswer(w http.ResponseWriter, r *http.Request) {
 func changeState(w http.ResponseWriter, r *http.Request) {
 	user := auth(r)
 	if user == nil {
+		WARNING.Println("Change State - User not authenticated")
 		return
 	}
 	vars := mux.Vars(r)
@@ -97,6 +101,7 @@ func changeState(w http.ResponseWriter, r *http.Request) {
   AND classes.uid = $2`, qid, user.Uid)
 
 	if writeErr(err, w) {
+		ERROR.Println("Change State - SELECT qid=" + strconv.Itoa(qid))
 		return
 	}
 
@@ -116,6 +121,7 @@ func changeState(w http.ResponseWriter, r *http.Request) {
                         WHERE quiz.qid= $1 
                         AND classes.cid = quiz.cid`, qid).Scan(&results)
 		if writeErr(err, w) {
+			ERROR.Println("Change State - SELECT qid=" + strconv.Itoa(qid))
 			return
 		}
 
@@ -136,11 +142,13 @@ func changeState(w http.ResponseWriter, r *http.Request) {
 		qzSesh[qid] = Session{qid, make(chan UserReply), make(chan int), ids}
 		go quizSesh(qzSesh[qid])
 	} else if !ok {
+		ERROR.Println("Change State - quiz session does not exist qid=" + strconv.Itoa(qid))
 		writeErr(fmt.Errorf("Quiz session does not exist"), w)
 		return
 	}
 
 	qzSesh[qid].state <- t.State
+	TRACE.Println("Change State - state changed qid=" + strconv.Itoa(qid) + "state=" + strconv.Itoa(t.State))
 	writeSuccess(w)
 }
 
@@ -183,7 +191,7 @@ func quit(qid int, qa []map[string]int) {
 	err := db.QueryRow(`SELECT info FROM quiz WHERE qid = $1`, qid).Scan(&qstring)
 	if err != nil {
 		//TODO uh this is really bad at this point
-		fmt.Println("cannot find quiz", err, qid)
+		ERROR.Println("quit - cannot find quiz qid=" + strconv.Itoa(qid), err.Error())
 	}
 
 	var quiz Quiz
@@ -227,9 +235,9 @@ func quit(qid int, qa []map[string]int) {
 	_, err = db.Exec(`UPDATE quiz SET info = $1 WHERE qid = $2`, string(q), qid)
 	if err != nil {
 		//TODO also really bad
-		fmt.Println("cannot save grades", err)
+		ERROR.Println("quit - cannot save grades qid=" + strconv.Itoa(qid), err.Error())
 	}
-
+	TRACE.Println("quit - grades saved qid=" + strconv.Itoa(qid))
 	//remove session
 	delete(qzSesh, qid)
 }
