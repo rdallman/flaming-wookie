@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	_ "github.com/lib/pq"
 )
 
@@ -12,7 +11,7 @@ func init() {
 	db, err = sql.Open("postgres", "postgres://wookie:password@absker.com/wookie?sslmode=disable")
 	//db, err = sql.Open("postgres", "user=reed dbname=wookie sslmode=disable")
 	if err != nil {
-		fmt.Println(err)
+		ERROR.Println("init db", err.Error())
 		return
 	}
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"log"
 	"net/smtp"
 	"strconv"
 	"text/template"
@@ -58,11 +57,11 @@ func sendStudentClassEmail(cid int, classname string, student map[string]string)
 	t := template.New("emailTemplate")
 	t, err = t.Parse(emailTemplate)
 	if err != nil {
-		log.Print("error trying to parse mail template")
+		ERROR.Println("Send Student Email - error trying to parse mail template")
 	}
 	err = t.Execute(&doc, context)
 	if err != nil {
-		log.Print("error trying to execute mail template")
+		ERROR.Println("Send Student Email - error trying to execute mail template")
 	}
 
 	//send email
@@ -72,6 +71,6 @@ func sendStudentClassEmail(cid int, classname string, student map[string]string)
 		[]string{student["email"]},
 		doc.Bytes())
 	if err != nil {
-		log.Print("ERROR: attempting to send a mail ", err)
+		ERROR.Println("Send Student Email - attempting to send email", err.Error())
 	}
 }

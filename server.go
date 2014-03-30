@@ -26,6 +26,7 @@ func handlePage(name string) func(http.ResponseWriter, *http.Request) {
 		user := auth(r) //check for cookie
 		err := templates.ExecuteTemplate(w, name+".html", user)
 		if err != nil {
+			ERROR.Println("Handle Page -", name, err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
@@ -58,7 +59,7 @@ func main() {
 	//TODO r.HandleFunc("/classes/{cid:[0-9]+}", handleClassDelete).Methods("DELETE")
 	r.HandleFunc("/classes/{cid:[0-9]+}/quiz", handleQuizList).Methods("GET")
 	r.HandleFunc("/classes/{cid:[0-9]+}/quiz", handleQuizCreate).Methods("POST")
-	r.HandleFunc("/classes/{cid:[0-9]+}/student", handleAddStudents).Methods("POST")
+	r.HandleFunc("/classes/{cid:[0-9]+}/student", handleAddStudent).Methods("POST")
 	//TODO /classes/{cid:[0-9]+}/students POST, DELETE (i.e. update student, delete student) //Do we want this? just update class?
 
 	//API quiz methods (api.go)
