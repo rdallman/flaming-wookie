@@ -1,7 +1,7 @@
 // quiz
 //var quizApp = angular.module('quizControllers', ['ngRoute']);
 
-angular.module('dashboardApp').controller('QuizController', function (quizService, classService, $scope, $http, $route, $routeParams, $location) {
+angular.module('dashboardApp').controller('QuizController', function (quizSessionService, quizService, classService, $scope, $http, $route, $routeParams, $location) {
 
   // used for traversing quiz in html
   $scope.current = -1;
@@ -86,36 +86,57 @@ angular.module('dashboardApp').controller('QuizController', function (quizServic
     }
   }
 
+
+
+
+  /*
+   * SESSION STUFF
+   * */
+
+  if ($location.$$path.match(/(\/quiz\/[0-9]+)/)) {
+    // open dat socket
+    quizSessionService.startSession($routeParams.id);
+  }
+
   // start the quiz, send state of 0 to the server
   $scope.startQuiz = function() {
     // post to server we're starting the quiz
-    $http({
-      method: 'PUT',
-      url: '/quiz/' + $scope.id + '/state',
-      data: angular.toJson({state: 0}),
-      headers: {'Content-Type': 'application/json'}
-    });
-    // set current to start of questions
+    /*
+     *$http({
+     *  method: 'PUT',
+     *  url: '/quiz/' + $scope.id + '/state',
+     *  data: angular.toJson({state: 0}),
+     *  headers: {'Content-Type': 'application/json'}
+     *});
+     */
     $scope.current = 0;
+    quizSessionService.changeState($scope.current);
   }
 
   $scope.nextQuestion = function() {
     // post to server that we're moving on...
-    $http({
-      method: 'PUT',
-      url: '/quiz/' + $scope.id + '/state',
-      data: angular.toJson({state: $scope.current}),
-      headers: {'Content-Type': 'application/json'}
-    });
+    /*
+     *$http({
+     *  method: 'PUT',
+     *  url: '/quiz/' + $scope.id + '/state',
+     *  data: angular.toJson({state: $scope.current}),
+     *  headers: {'Content-Type': 'application/json'}
+     *});
+     */
+    $scope.current++;
+    quizSessionService.changeState($scope.current);
   }
 
   $scope.endQuiz = function() {
-    $http({
-      method: 'PUT',
-      url: '/quiz/' + $scope.id + '/state',
-      data: angular.toJson({state: -1}),
-      headers: {'Content-Type': 'application/json'}
-    });
+    /*
+     *$http({
+     *  method: 'PUT',
+     *  url: '/quiz/' + $scope.id + '/state',
+     *  data: angular.toJson({state: -1}),
+     *  headers: {'Content-Type': 'application/json'}
+     *});
+     */
+    quizSessionService.endSession();
     // redirect to main
     $location.path('/main');
   }
