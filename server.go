@@ -5,6 +5,8 @@ import (
 	"html/template"
 	"net/http"
 
+	"code.google.com/p/go.net/websocket"
+
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
@@ -68,15 +70,13 @@ func main() {
 	r.HandleFunc("/quiz/{id:[0-9]+}", handleQuizDelete).Methods("DELETE")
 	//TODO r.HandleFunc("/quiz/{id:[0-9]+}", handleQuizUpdate).Methods("POST")
 
-	//API quiz session (session.go)
-	r.HandleFunc("/quiz/{id:[0-9]+}/state", changeState).Methods("PUT")
-	r.HandleFunc("/quiz/{id:[0-9]+}/answer", handleAnswer).Methods("PUT")
-	//  /quiz/{qid:[0-9]+}/splash PUT (i.e. teacher about to start quiz, accept connects, state -1?)
-	//  /quiz/{qid:[0-9]+}/connect PUT (i.e. student subscribe w/ HOST:PORT)
-
 	//Javascript pages
 	r.HandleFunc("/dashboard/", handlePage("dashboard")).Methods("GET")
 	//TODO browser "student" client
+
+	// websockets
+	r.Handle("/takeme/{id:[0-9]+}", websocket.Handler(studServer))
+	r.Handle("/giveme/{id:[0-9]+}", websocket.Handler(teachServer))
 
 	http.Handle("/", r)
 	serveFile("/favicon.ico", "./favicon.ico")
