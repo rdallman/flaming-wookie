@@ -16,14 +16,12 @@ var sessions map[string]*session
 type session struct {
 	qid        string
 	title      string
-	state      int
-	questions  []sendQ
+	state      int                      // current question or INFINITY
+	questions  []sendQ                  // ready to send out questions
 	registered map[string]bool          // students who can connect
 	conns      map[*websocket.Conn]bool // students connected
 	answers    []map[string]int         // []map[sid]answer where i = ?#
 }
-
-type students map[*websocket.Conn]bool
 
 type sendQ struct {
 	Text    string   `json:"text"`
@@ -76,7 +74,8 @@ func listenAnswers(ws *websocket.Conn, sid, cid string) {
 		}
 		err := websocket.JSON.Receive(ws, &data)
 		if err != nil { // io.EOF = disconnect TODO separately
-			return // when teacher ends quiz, this will be err closed connection
+			delete(sessions[cid].conns, ws) // remove from session
+			return
 		}
 		fmt.Println(sid, "says:", data.Answer)
 		sesh := sessions[cid]
@@ -85,12 +84,27 @@ func listenAnswers(ws *websocket.Conn, sid, cid string) {
 	}
 }
 
+// validate that a teacher owns requested quiz, spin up a session
 func teachServer(ws *websocket.Conn) {
-	// TODO authorize teachers
+	user := auth(ws.Request())
+	if user == nil {
+		return
+	}
 
 	qid := mux.Vars(ws.Request())["id"]
 
-	//if _, ok := sessions[qid]; !ok {
+	var count int
+	err := db.QueryRow(`
+  SELECT COUNT(classes.uid)
+  FROM classes, quiz
+  WHERE quiz.qid = $1
+  AND classes.uid = $2`, qid, user.Uid).Scan(&count)
+
+	if err != nil || count < 1 { // not authorized or something terribly wrong
+		return
+	}
+
+	//if _, ok := sessions[qid]; !ok { // TODO
 	cid := newSession(qid)
 	listenTeach(ws, cid)
 }
