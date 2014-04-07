@@ -148,7 +148,7 @@ func handleAddStudent(w http.ResponseWriter, r *http.Request) {
 	TRACE.Println("Add Student - UPDATE cid=" + cid)
 
 	go sendStudentClassEmail(j.Cid, cname, student)
-	
+
 	writeSuccess(w)
 }
 
@@ -221,6 +221,71 @@ func handleClassList(w http.ResponseWriter, r *http.Request) {
 		classes = append(classes, map[string]interface{}{"name": name, "cid": cid})
 	}
 	writeSuccess(w, classes)
+}
+
+//can only change class name right now.. anything else we want to change?
+//TODO: check this
+//Expecting JSON body of the form
+//{
+//  "name":string
+//}
+func handleClassUpdate(w http.ResponseWriter, r *http.Request) {
+
+	auth := auth(r)
+	if auth == nil {
+		writeErr(fmt.Errorf("User not authenticated"), w)
+		return
+	}
+
+	vars := mux.Vars(r)
+	cid, err1 := strconv.Atoi(vars["cid"])
+	if writeErr(err1, w) {
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	j := struct {
+		Name string `json:"name"`
+	}{}
+	err := decoder.Decode(&j)
+	if writeErr(err, w) {
+		return
+	} else {
+		_, err := db.Exec(`UPDATE classes SET name=$1 WHERE cid=$2`, j.Name, cid)
+		if writeErr(err, w) {
+			fmt.Println("\nDB err")
+			return
+		} else {
+			writeSuccess(w)
+		}
+	}
+}
+
+func handleClassDelete(w http.ResponseWriter, r *http.Request) {
+	auth := auth(r)
+	if auth == nil {
+		writeErr(fmt.Errorf("User not authenticated"), w)
+		return
+	}
+	vars := mux.Vars(r)
+	cid, err := strconv.Atoi(vars["cid"])
+	if writeErr(err, w) {
+		return
+	}
+
+	_, err = db.Exec(`DELETE FROM quiz 
+                    WHERE cid=$1`, cid)
+	if writeErr(err, w) {
+		return
+	}
+
+	_, err = db.Exec(`DELETE FROM classes 
+                    WHERE cid=$1`, cid)
+	if writeErr(err, w) {
+		return
+	} else {
+		writeSuccess(w)
+	}
 }
 
 // TODO: flash message to show quiz was added, and redirect

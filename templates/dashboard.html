@@ -11,6 +11,7 @@
   <link href="/static/application.min.css" rel="stylesheet" media="screen">
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular-route.js"></script>
+  <script src="https://rawgithub.com/gtramontina/angular-flash/master/angular-flash.js"></script>
   <style>
     body {
       background: rgb(94, 136, 159);
@@ -18,6 +19,9 @@
   </style>
 </head>
 <body>
+    <div id="flash">
+    <flash:messages class="slide-down" ng:show="messages"></flash:messages>
+    </div>
     <div class="logo">
       <a href="/"><h4>Wookiee</h4></a>
     </div>
@@ -28,6 +32,8 @@
         <!--<li class="panel"><a href="#/quizzes">Quizzes <i class="fa fa-list-ol"></i></a></li>-->
       </ul>
     </nav>
+
+
 
     <div class="wrap">
       <header class="page-header">
@@ -52,6 +58,7 @@
     </div>
 
     <script src="/static/app/app.js"></script>
+    <script src="/static/app/angular-flash.js"></script>
     <script src="/static/app/controllers/quizCtrl.js"></script>
     <script src="/static/app/controllers/classCtrl.js"></script>
     <script src="/static/app/services/classService.js"></script>

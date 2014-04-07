@@ -2,7 +2,7 @@
 // class controller for
 //var classApp = angular.module('classControllers', ['ngRoute']);
 
-angular.module('dashboardApp').controller('ClassController', function (classService, quizService, $scope, $http, $route, $routeParams, $location) {
+angular.module('dashboardApp').controller('ClassController', function (classService, quizService, $scope, $http, $route, $routeParams, $location, flash) {
 
   $scope.classList = [];
   $scope.id = -1;
@@ -14,6 +14,7 @@ angular.module('dashboardApp').controller('ClassController', function (classServ
   }
   // used for determining buttons on the view
   $scope.editing = false;
+
 
   // class list
   if ($routeParams.id === undefined) {
@@ -64,7 +65,9 @@ angular.module('dashboardApp').controller('ClassController', function (classServ
     else {
       if ($scope.classform.$valid) {
         classService.createClass($scope.class);
-        $location.path('/main');
+        $location.path('/classes');
+    document.getElementById("flash").setAttribute("class", "alert alert-success"); 
+    flash("You created a class!");
       }
     }
   }
@@ -77,6 +80,8 @@ angular.module('dashboardApp').controller('ClassController', function (classServ
           $scope.student.email = "";
           $scope.student.fname = "";
           $scope.student.lname = "";
+        
+          
         }).error(function(data) {
           alert("Error: Could not add student");
         });

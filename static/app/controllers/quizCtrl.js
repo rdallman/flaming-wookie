@@ -1,7 +1,7 @@
 // quiz
 //var quizApp = angular.module('quizControllers', ['ngRoute']);
 
-angular.module('dashboardApp').controller('QuizController', function (quizSessionService, quizService, classService, $scope, $http, $route, $routeParams, $location) {
+angular.module('dashboardApp').controller('QuizController', function (quizSessionService, quizService, classService, $scope, $http, $route, $routeParams, $location, flash) {
 
   // used for traversing quiz in html
   $scope.current = -1;
@@ -37,6 +37,7 @@ angular.module('dashboardApp').controller('QuizController', function (quizSessio
       url: '/quiz'
     }).success(function(data) {
       $scope.quizlist = data["info"]
+
     }).error(function(data) {
 
     });
@@ -82,7 +83,9 @@ angular.module('dashboardApp').controller('QuizController', function (quizSessio
   $scope.postQuiz = function() {
     if ($scope.quizform.$valid) {
       quizService.createQuiz($scope.classId, $scope.quiz);
-      $location.path('/main');
+      $location.path('/quizzes');
+      document.getElementById("flash").setAttribute("class", "alert alert-success");
+      flash("You created a quiz!");
     }
   }
 
