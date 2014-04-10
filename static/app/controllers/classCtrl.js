@@ -110,4 +110,13 @@ angular.module('dashboardApp').controller('ClassController', function (classServ
         alert("Error: Could not delete quiz");
       });
   }
+
+  $scope.deleteClass = function(cid, index) {
+    classService.deleteClass(cid).success(function(data) {
+      $scope.classList.splice(index, 1);
+      $location.path('/main');
+    }).error(function(data) {
+        alert("Error: Could not delete class");
+      });
+  }
 });

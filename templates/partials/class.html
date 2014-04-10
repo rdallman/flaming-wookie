@@ -3,6 +3,7 @@
 		<div class="col-md-8">
 			<h1>{{ class.name }}</h1>
 			<a href="#/classes/{{ id }}/edit" class="btn btn-large btn-primary pull-left">Edit Class</a>
+			<a class="btn btn-danger pull-left" ng-click="deleteClass(id, $index)"><i class="fa fa-trash-o fa-lg" href="#classes"></i> Delete Class</a>
 		</div>
 	</div>
   	<br />
