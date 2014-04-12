@@ -27,6 +27,13 @@ angular.module('dashboardApp').factory('classService', function($http, $route, $
       })
     },
 
+    deleteClass: function(cid) {
+      return $http({
+        method: 'DELETE',
+        url: '/classes/' + cid
+      })
+    },
+
     addStudent: function(email, fname, lname) {
       return $http({
         method: 'POST',

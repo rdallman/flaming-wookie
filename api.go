@@ -265,6 +265,7 @@ func handleClassDelete(w http.ResponseWriter, r *http.Request) {
 	auth := auth(r)
 	if auth == nil {
 		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Delete Class - User not authenticated")
 		return
 	}
 	vars := mux.Vars(r)
@@ -276,16 +277,19 @@ func handleClassDelete(w http.ResponseWriter, r *http.Request) {
 	_, err = db.Exec(`DELETE FROM quiz 
                     WHERE cid=$1`, cid)
 	if writeErr(err, w) {
+		ERROR.Println("Delete Class - DELETE FROM quiz WHERE cid=" + strconv.Itoa(cid))
 		return
 	}
 
 	_, err = db.Exec(`DELETE FROM classes 
                     WHERE cid=$1`, cid)
 	if writeErr(err, w) {
+		ERROR.Println("Delete Class - DELETE cid=" + strconv.Itoa(cid))
 		return
 	} else {
 		writeSuccess(w)
 	}
+	TRACE.Println("Delete Class - DELETE cid=" + strconv.Itoa(cid))
 }
 
 // TODO: flash message to show quiz was added, and redirect

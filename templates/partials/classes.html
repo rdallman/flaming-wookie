@@ -12,6 +12,7 @@
 					<ul class="list-group">
 						<li class="list-group-item" ng-repeat="c in classList">
 							<a style="color:white;" href="#/classes/{{ c.cid }}">{{ c.name }}</a>
+							<a class="btn btn-danger pull-right" ng-click="deleteClass(c.cid, $index)"><i class="fa fa-trash-o fa-lg"></i> Delete Class</a>
               				<a class="btn btn-primary pull-right" href="#/classes/{{ c.cid }}/edit"><i class="fa fa-cog"></i> Edit Class</a>
 						</li>
 					</ul>
