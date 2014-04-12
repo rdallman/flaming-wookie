@@ -1,32 +1,33 @@
-// quiz
-//var quizApp = angular.module('quizControllers', ['ngRoute']);
 
-angular.module('dashboardApp').controller('QuizController', function (sessionService, quizService, classService, $scope, $http, $route, $routeParams, $location, flash) {
+angular.module('dashboardApp').controller('PollController', function (sessionService, pollService, classService, $scope, $http, $route, $routeParams, $location, flash) {
 
-  // used for traversing quiz in html
+  // used for traversing poll in html
   $scope.current = -1;
   $scope.qid = -1;
   $scope.cid;
+  $scope.class;
   $scope.className;
-  $scope.grades;
+  $scope.results;
 
   $scope.classes = [];
 
-  // main model for quiz
-  $scope.quiz = {
+  // main model for poll
+  $scope.poll = {
     title: "",
     questions: [],
     grades: {}
   };
 
-  $scope.quizlist = []
+  $scope.polllist = []
 
   if ($routeParams.qid !== undefined) {	
-    quizService.getQuiz($routeParams.qid).success(function(data) {
+    pollService.getPoll($routeParams.qid).success(function(data) {
       if (data !== undefined) {
-        $scope.quiz = data["info"]
+        $scope.poll = data["info"]
         $scope.qid = $routeParams.qid;
-        //alert($scope.quiz.grades.length > 0);
+        pollService.getResults($routeParams.qid).success(function(data) {
+          $scope.results = data["info"];
+        });
       }
     }).error(function(data) {
       // handle error
@@ -37,39 +38,15 @@ angular.module('dashboardApp').controller('QuizController', function (sessionSer
     classService.getClass($routeParams.cid).success(function(data){
       if (data !== undefined) {
         $scope.className = data["info"]["name"];
+        $scope.class = data["info"];
         $scope.cid = $routeParams.cid;
       }
     });
-
   }
-
-  /*if ($location.$$path === "/quizzes") {
-    $http({
-      method: 'GET',
-      url: '/quiz'
-    }).success(function(data) {
-      $scope.quizlist = data["info"]
-
-    }).error(function(data) {
-
-    });
-  }*/
-
-  /*if ($location.$$path.match(/(\/classes\/[0-9]+\/new-quiz)/)) {
-    // creating a quiz
-    $scope.cid = $routeParams.cid;
-    classService.getClass($scope.cid).success(function(data){
-      if (data !== undefined) {
-        $scope.className = data["info"]["name"];
-      }
-    }).error(function(data){
-      //handle error
-    });
-  }*/
 
   $scope.addQuestion = function() {
     if ($scope.questionform.$valid) {
-      $scope.quiz.questions.push({text: $scope.question.text, correct: -1, answers: []});
+      $scope.poll.questions.push({text: $scope.question.text, answers: []});
       $scope.question.text = "";
     }
   }
@@ -85,45 +62,35 @@ angular.module('dashboardApp').controller('QuizController', function (sessionSer
   }
 
   $scope.removeQuestion = function(question) {
-    $scope.quiz.questions.splice($scope.quiz.questions.indexOf(question), 1);
+    $scope.poll.questions.splice($scope.poll.questions.indexOf(question), 1);
   }
 
   $scope.removeAnswer = function(question, answer) {
     question.answers.splice(question.answers.indexOf(answer), 1);
   }
 
-  $scope.postQuiz = function() {
-    if ($scope.quizform.$valid) {
-      quizService.createQuiz($scope.cid, $scope.quiz).success(function(data) {
+  $scope.postPoll = function() {
+    if ($scope.pollform.$valid) {
+      pollService.createPoll($scope.cid, $scope.poll).success(function(data) {
         $location.path('/classes/' + $scope.cid);
       });
       
       //document.getElementById("flash").setAttribute("class", "alert alert-success");
-      //flash("You created a quiz!");
+      //flash("You created a poll!");
     }
   }
-
- if ($location.$$path.match(/(\/classes\/[0-9]+\/quiz\/[0-9]+\/grades)$/)) {
-      quizService.getGrades($routeParams.qid).success(function(data) {
-        $scope.grades = data["info"]
-      });
-      
-  }
-
-
-
 
   /*
    * SESSION STUFF
    * */
 
-  if ($location.$$path.match(/(\/quiz\/[0-9]+)$/)) {
+  if ($location.$$path.match(/(\/poll\/[0-9]+)$/)) {
     // open dat socket
     sessionService.startSession($routeParams.qid);
   }
 
   // start the quiz, send state of 0 to the server
-  $scope.startQuiz = function() {
+  $scope.startPoll = function() {
     // post to server we're starting the quiz
     /*
      *$http({
@@ -151,7 +118,7 @@ angular.module('dashboardApp').controller('QuizController', function (sessionSer
     sessionService.changeState($scope.current);
   }
 
-  $scope.endQuiz = function() {
+  $scope.endPoll = function() {
     /*
      *$http({
      *  method: 'PUT',

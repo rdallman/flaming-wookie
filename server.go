@@ -60,10 +60,13 @@ func main() {
 	r.HandleFunc("/classes/{cid:[0-9]+}", handleClassUpdate).Methods("POST")
 	r.HandleFunc("/classes/{cid:[0-9]+}", handleClassDelete).Methods("DELETE")
 	r.HandleFunc("/classes/{cid:[0-9]+}/quiz", handleQuizList).Methods("GET")
+	r.HandleFunc("/classes/{cid:[0-9]+}/polls", handlePollsList).Methods("GET")
 	r.HandleFunc("/classes/{cid:[0-9]+}/quiz", handleQuizCreate).Methods("POST")
+	r.HandleFunc("/classes/{cid:[0-9]+}/poll", handlePollCreate).Methods("POST")
 	r.HandleFunc("/classes/{cid:[0-9]+}/student", handleAddStudent).Methods("POST")
 	r.HandleFunc("/classes/{cid:[0-9]+}/student", handleDeleteStudent).Methods("DELETE")
 	r.HandleFunc("/classes/{cid:[0-9]+}/student", handleUpdateStudent).Methods("PUT")
+	r.HandleFunc("/classes/{cid:[0-9]+}/attendance", handleAttendanceList).Methods("GET")
 
 	//API quiz methods (api.go)
 	r.HandleFunc("/quiz", handleQuizList).Methods("GET")
@@ -72,6 +75,12 @@ func main() {
 	r.HandleFunc("/quiz/{id:[0-9]+}/grades", handleGetQuizGrades).Methods("GET")
 	//TODO r.HandleFunc("/quiz/{id:[0-9]+}", handleQuizUpdate).Methods("POST")
 
+	// API for polls
+	r.HandleFunc("/polls", handlePollsList).Methods("GET")
+	r.HandleFunc("/poll/{id:[0-9]+}", handlePollGet).Methods("GET")
+	r.HandleFunc("/poll/{id:[0-9]+}", handlePollDelete).Methods("DELETE")
+	r.HandleFunc("/poll/{id:[0-9]+}/results", handlePollResults).Methods("GET")
+
 	//Javascript pages
 	r.HandleFunc("/dashboard/", handlePage("dashboard")).Methods("GET")
 	//TODO browser "student" client
@@ -79,6 +88,7 @@ func main() {
 	// websockets
 	r.Handle("/takeme/{id:[0-9]+}", websocket.Handler(studServer))
 	r.Handle("/giveme/{id:[0-9]+}", websocket.Handler(teachServer))
+	r.Handle("/takeAttendance/{cid:[0-9]+}", websocket.Handler(attendanceServer))
 
 	http.Handle("/", r)
 	serveFile("/favicon.ico", "./favicon.ico")

@@ -1,15 +1,15 @@
 <link href="/static/slides.css" rel="stylesheet" media="screen">
-<div id="slides" ng-controller="QuizController">
+<div id="slides" ng-controller="PollController">
 	
 	
 	<div ng-class="{active: current==-1}" class="slide col-sm-offset-2">
-		<center><h1>{{ quiz.title }}</h1></center>
+		<center><h1>{{ poll.title }}</h1></center>
 		<br />
-    	<center><h1>Quiz ID: {{ qid }}</hi><center>
+    <center><h1>Poll ID: {{ qid }}</hi><center>
 		<br />
-		<center><button class="btn btn-primary btn-lg" ng-click="startQuiz()">Start Quiz</button></center>
+		<center><button class="btn btn-primary btn-lg" ng-click="startPoll()">Start Poll</button></center>
 	</div>
-	<div ng-repeat="question in quiz.questions">
+	<div ng-repeat="question in poll.questions">
 		<div ng-class="{active: current==$index}" class="slide col-sm-offset-2">
 			<h1>{{ question.text }}</h1>
       <br />
@@ -21,7 +21,7 @@
 			<center><button class="btn btn-primary btn-lg" 
 			ng-class="{true: 'active-btn', false: 'inactive-btn'}[!$last]" ng-click="nextQuestion()">Next Question</button></center>
 			<center><button class="btn btn-primary btn-lg" 
-			ng-class="{true: 'active-btn', false: 'inactive-btn'}[$last]" ng-click="endQuiz()">End Quiz</button></center>
+			ng-class="{true: 'active-btn', false: 'inactive-btn'}[$last]" ng-click="endPoll()">End Poll</button></center>
 		</div>
 		
 	</div>

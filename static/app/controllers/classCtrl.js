@@ -2,11 +2,12 @@
 // class controller for
 //var classApp = angular.module('classControllers', ['ngRoute']);
 
-angular.module('dashboardApp').controller('ClassController', function (classService, quizService, $scope, $http, $route, $routeParams, $location, flash) {
+angular.module('dashboardApp').controller('ClassController', function (classService, pollService, quizService, $scope, $http, $route, $routeParams, $location, flash) {
 
   $scope.classList = [];
   $scope.cid = -1;
   $scope.quizList = [];
+  $scope.pollList = [];
 
   $scope.class = {
     name: "",
@@ -42,19 +43,20 @@ angular.module('dashboardApp').controller('ClassController', function (classServ
           $scope.editing = true;
         }
       }
-    }).
-    error(function(data) {
-      // handle error
     });
 
     // get quizzes
     quizService.getQuizzes($routeParams.cid).
     success(function(data) {
-      $scope.quizList = data.info
-    }).
-    error(function(data) {
-      // handle
+      $scope.quizList = data.info;
     });
+
+    // get polls
+    pollService.getPolls($routeParams.cid).
+    success(function(data) {
+      $scope.pollList = data.info;
+    });
+
   }
 
   $scope.createClass = function() {
@@ -109,6 +111,14 @@ angular.module('dashboardApp').controller('ClassController', function (classServ
     }).error(function(data) {
         alert("Error: Could not delete quiz");
       });
+  }
+
+  $scope.deletePoll = function(pid, index) {
+    pollService.deletePoll(pid).success(function(data) {
+      $scope.pollList.splice(index, 1);
+    }).error(function(data) {
+        alert("Error: Could not delete poll");
+    });
   }
 
   $scope.deleteClass = function(cid, index) {

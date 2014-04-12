@@ -11,6 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"time"
 )
 
 // Expecting http body with JSON of form:
@@ -71,7 +72,7 @@ func createStudentId(student map[string]string) map[string]string {
 	b := make([]byte, 12)
 	rand.Read(b)
 
-	str := base64.StdEncoding.EncodeToString(b)
+	str := base64.URLEncoding.EncodeToString(b)
 	//fmt.Println(str)
 	student["sid"] = str
 	return student
@@ -488,8 +489,8 @@ func handleQuizCreate(w http.ResponseWriter, r *http.Request) {
 	//`, string(info), cid)
 	var qid int
 	err = db.QueryRow(`
-    INSERT INTO quiz (info, cid)
-		VALUES($1, $2) RETURNING qid
+    INSERT INTO quiz (info, cid, type)
+		VALUES($1, $2, 1) RETURNING qid
     `, string(info), cid).Scan(&qid)
 	if writeErr(err, w) {
 		ERROR.Println("Create Quiz - INSERT cid=" + cid)
@@ -594,6 +595,7 @@ func handleQuizList(w http.ResponseWriter, r *http.Request) {
       WHERE classes.uid = $1
       AND classes.cid = $2
       AND quiz.cid = classes.cid
+      AND quiz.type = 1
       `, auth.Uid, cid)
 	} else {
 		rows, err = db.Query(`
@@ -601,6 +603,7 @@ func handleQuizList(w http.ResponseWriter, r *http.Request) {
       FROM quiz, classes
       WHERE classes.uid = $1
       AND classes.cid = quiz.cid
+      AND quiz.type = 1
       `, auth.Uid)
 	}
 	if writeErr(err, w) {
@@ -708,4 +711,215 @@ func handleGetQuizGrades(w http.ResponseWriter, r *http.Request) {
 	gradeReturn["studentGrades"] = studentGrades
 
 	writeSuccess(w, gradeReturn)
+}
+
+// POLLS
+
+// handlePollCreate creates a quiz from an AJAX POST request
+func handlePollCreate(w http.ResponseWriter, r *http.Request) {
+	user := auth(r)
+	if user == nil {
+		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Create Poll - User not authenticated")
+		return
+	}
+
+	cid := mux.Vars(r)["cid"]
+
+	var p Quiz
+	err := json.NewDecoder(r.Body).Decode(&p)
+	if writeErr(err, w) {
+		fmt.Println("Here")
+		return
+	}
+
+	info, err := json.Marshal(p)
+	if writeErr(err, w) {
+		return
+	}
+
+	// insert the quiz
+	//_, err = db.Exec(`
+	//INSERT INTO quiz (info, cid)
+	//VALUES($1, $2)
+	//`, string(info), cid)
+	var pid int
+	err = db.QueryRow(`
+    INSERT INTO quiz (info, cid, type)
+		VALUES($1, $2, 2) RETURNING qid
+    `, string(info), cid).Scan(&pid)
+	if writeErr(err, w) {
+		ERROR.Println("Create Poll - INSERT cid=" + cid)
+		return
+	}
+	TRACE.Println("Create Poll - INSERT qid=" + strconv.Itoa(pid))
+	writeSuccess(w, pid)
+}
+
+/*
+Get the poll with the provided pid
+*/
+func handlePollGet(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	pid, err := strconv.Atoi(vars["id"])
+	if writeErr(err, w) {
+		return
+	}
+	//fmt.Printf("%d", qID) //testing
+	var info string
+	err = db.QueryRow(`SELECT info FROM quiz WHERE qid=$1`, pid).Scan(&info)
+	if writeErr(err, w) {
+		ERROR.Println("Get Poll - SELECT qid=" + strconv.Itoa(pid))
+		return
+	}
+
+	var obj map[string]interface{}
+	json.Unmarshal([]byte(info), &obj)
+	writeSuccess(w, obj)
+}
+
+// TODO Delete a poll
+func handlePollDelete(w http.ResponseWriter, r *http.Request) {
+	auth := auth(r)
+	if auth == nil {
+		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Delete Quiz - User not authenticated")
+		return
+	}
+	vars := mux.Vars(r)
+	pid, err := strconv.Atoi(vars["id"])
+	if writeErr(err, w) {
+		return
+	}
+	_, err = db.Exec(`DELETE FROM quiz WHERE qid=$1`, pid)
+	if writeErr(err, w) {
+		ERROR.Println("Delete Poll - DELETE qid=" + strconv.Itoa(pid))
+		return
+	}
+	TRACE.Println("Delete Poll - DELETE qid=" + strconv.Itoa(pid))
+	writeSuccess(w)
+}
+
+//
+func handlePollsList(w http.ResponseWriter, r *http.Request) {
+	//title and id, return JSON
+	auth := auth(r)
+	if auth == nil {
+		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Get Poll List - User not authenticated")
+		return
+	}
+
+	vars := mux.Vars(r)
+
+	var rows *sql.Rows
+	var err error
+
+	//TODO maybe fall through with string.. handling of rows is bad
+	if cid, ok := vars["cid"]; ok {
+		rows, err = db.Query(`
+      SELECT qid, info->>'title', name
+      FROM quiz, classes
+      WHERE classes.uid = $1
+      AND classes.cid = $2
+      AND quiz.cid = classes.cid
+      AND quiz.type = 2
+      `, auth.Uid, cid)
+	} else {
+		rows, err = db.Query(`
+      SELECT qid, info->>'title', name
+      FROM quiz, classes
+      WHERE classes.uid = $1
+      AND classes.cid = quiz.cid
+      AND quiz.type = 2
+      `, auth.Uid)
+	}
+	if writeErr(err, w) {
+		ERROR.Println("Get Poll List - SELECT")
+		return
+	}
+	defer rows.Close() //TODO these may not close if err != sql.NoRowsErr
+
+	polls := make([]map[string]interface{}, 0)
+
+	for rows.Next() {
+		var pid int
+		var title, name string
+		err = rows.Scan(&pid, &title, &name)
+		if writeErr(err, w) {
+			fmt.Println("here")
+			return
+		}
+
+		polls = append(polls, map[string]interface{}{"title": title, "qid": pid, "name": name})
+	}
+	writeSuccess(w, polls)
+}
+
+func handleAttendanceList(w http.ResponseWriter, r *http.Request) {
+	auth := auth(r)
+	if auth == nil {
+		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Get Attendance List - User not authenticated")
+		return
+	}
+
+	var rows *sql.Rows
+	var err error
+
+	cid := mux.Vars(r)["cid"]
+
+	rows, err = db.Query(`
+		select students, date_created
+		from attendance
+		where cid = $1
+		order by date_created
+		`, cid)
+
+	if writeErr(err, w) {
+		ERROR.Println("Get Attendance List - SELECT")
+		return
+	}
+	defer rows.Close()
+
+	attendance := make([]map[string]interface{}, 0)
+
+	for rows.Next() {
+		var students string
+		var date time.Time
+		err = rows.Scan(&students, &date)
+		if writeErr(err, w) {
+			fmt.Println(err)
+			return
+		}
+		var studentsJson []map[string]int
+		_ = json.Unmarshal([]byte(students), &studentsJson)
+		attendance = append(attendance, map[string]interface{}{"date": date, "students": studentsJson})
+	}
+	writeSuccess(w, attendance)
+
+}
+
+
+func handlePollResults(w http.ResponseWriter, r *http.Request) {
+	auth := auth(r)
+	if auth == nil {
+		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Get Attendance List - User not authenticated")
+		return
+	}
+
+	vars := mux.Vars(r)
+	qid, err := strconv.Atoi(vars["id"])
+
+	var info string
+	err = db.QueryRow(`SELECT by_question FROM session_dump WHERE qid=$1 order by date_created limit 1`, qid).Scan(&info)
+	if writeErr(err, w) {
+		ERROR.Println("Poll Results - get qid=" + strconv.Itoa(qid))
+		return
+	}
+	var obj []map[string]interface{}
+	json.Unmarshal([]byte(info), &obj)
+	writeSuccess(w, obj)
+
 }

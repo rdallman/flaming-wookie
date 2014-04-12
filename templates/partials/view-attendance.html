@@ -1,0 +1,24 @@
+<div ng-controller="AttendanceController">
+	<div class="row">
+		<div class="col-md-8">
+			<h1>{{ class.name }} Attendance</h1>
+		</div>
+	</div>
+	<br />
+	<div class="row" ng-repeat="attendanceDate in attendance">
+		<div class="col-md-8">
+			<section class="widget">
+				<header>
+					<h4 style="float:left;font-size:24px;">{{ attendanceDate.date }}</h4>
+				</header>
+				<div style="margin-top: 40px;" class="body">
+					<ul class="list-group">
+						<li class="list-group-item" ng-repeat="student in attendanceDate.students">
+							<span ng-repeat="(sid, thing) in student">{{ sid|filterStudentName:class.students }}</span>
+						</li>
+					</ul>
+				</div>
+			</section>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,23 @@
+<div ng-controller="PollController">
+	<div class="row">
+		<div class="col-md-8">
+			<h1>{{ poll.title }} Results</h1>
+		</div>
+	</div>
+	<br />
+	<div class="row" ng-repeat="question in poll.questions">
+		<div class="col-md-8">
+			<section class="widget">
+				<header>
+	          		<h2 style="float:left;">{{question.text}}</h2>
+				</header>
+				<div style="margin-top: 40px;"class="body">
+					<ul class="list-group">
+						<li class="list-group-item" ng-repeat="answer in question.answers">{{ answer }} - {{ results | filterPollResults:$index:$parent.$index}}
+						</li>
+					</ul>
+				</div>
+			</section>
+		</div>
+	</div>
+</div>
