@@ -6,11 +6,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"strconv"
-
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"net/http"
+	"strconv"
+	"strings"
 )
 
 // Expecting http body with JSON of form:
@@ -149,7 +149,172 @@ func handleAddStudent(w http.ResponseWriter, r *http.Request) {
 
 	go sendStudentClassEmail(j.Cid, cname, student)
 
+	fmt.Println("TESTING: ", student)
+
+	writeSuccess(w, student)
+}
+
+// URL: /classes/{cid}/students
+//
+//Expecting JSON :
+// {
+//   "sid": string
+// }
+func handleDeleteStudent(w http.ResponseWriter, r *http.Request) {
+	user := auth(r)
+	if auth == nil {
+		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Delete Student - User not authenticated")
+		return
+	}
+	cid := mux.Vars(r)["cid"]
+
+	decoder := json.NewDecoder(r.Body)
+	id := struct {
+		Sid string `json:"sid"`
+	}{}
+	err := decoder.Decode(&id)
+	if writeErr(err, w) {
+		return
+	}
+
+	var jstring, cname string
+	err = db.QueryRow(`SELECT name, students 
+                     FROM classes 
+                     WHERE uid = $1 
+                     AND cid = $2`, user.Uid, cid).Scan(&cname, &jstring)
+	if writeErr(err, w) {
+		ERROR.Println("Delete Student - SELECT cid=" + cid)
+		return
+	}
+
+	var students []map[string]string
+	err = json.Unmarshal([]byte(jstring), &students)
+	if writeErr(err, w) {
+		return
+	}
+
+	//fmt.Println("id.SID ", id.Sid)
+	var newStudents []map[string]string
+	for i, _ := range students {
+		//fmt.Println("\nsid ", students[i]["sid"])
+		if !strings.EqualFold(students[i]["sid"], id.Sid) {
+			//fmt.Println(" !=  ", students[i]["sid"])
+			//append(newStudents, students[student])
+			newStudents = append(newStudents, students[i])
+		}
+	}
+
+	//fmt.Println("\n\nNEW ", newStudents)
+	js, err := json.Marshal(newStudents)
+	if writeErr(err, w) {
+		return
+	}
+
+	_, err = db.Exec(`UPDATE classes 
+                    SET students=$1
+                    WHERE cid=$2`, string(js), cid)
+	if writeErr(err, w) {
+		ERROR.Println("Delete Student - UPDATE cid=" + cid)
+		return
+	}
+	TRACE.Println("Add Student - UPDATE cid=" + cid)
+
 	writeSuccess(w)
+
+}
+
+// URL: /classes/{cid}/students
+//
+//Expecting JSON :
+// {
+//   "sid": string
+//   "email": string
+// }
+//TODO make this a little nicer..
+func handleUpdateStudent(w http.ResponseWriter, r *http.Request) {
+	user := auth(r)
+	if auth == nil {
+		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Update Student - User not authenticated")
+		return
+	}
+	vars := mux.Vars(r)
+	cid, err := strconv.Atoi(vars["cid"])
+	if writeErr(err, w) {
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	id := struct {
+		Sid   string `json:"sid"`
+		Email string `json:"email"`
+	}{}
+	err = decoder.Decode(&id)
+	if writeErr(err, w) {
+		return
+	}
+
+	var jstring, cname string
+	err = db.QueryRow(`SELECT name, students 
+                     FROM classes 
+                     WHERE uid = $1 
+                     AND cid = $2`, user.Uid, cid).Scan(&cname, &jstring)
+	if writeErr(err, w) {
+		ERROR.Println("Update Student - SELECT cid=", cid)
+		return
+	}
+
+	var students []map[string]string
+	err = json.Unmarshal([]byte(jstring), &students)
+	if writeErr(err, w) {
+		return
+	}
+
+	//fmt.Println("id.SID ", id.Sid)
+	var newStudents []map[string]string
+	var fname string
+	var lname string
+	for i, _ := range students {
+		//fmt.Println("\nsid ", students[i]["sid"])
+		if strings.EqualFold(students[i]["sid"], id.Sid) {
+			//fmt.Println("\nEQUAL", students[i]["sid"], " ", id.Sid)
+			students[i]["email"] = id.Email
+			fname = students[i]["fname"]
+			lname = students[i]["lname"]
+			newStudents = append(newStudents, students[i])
+		} else {
+			//fmt.Println("\nNOT EQUAL ", students[i]["sid"])
+			//append(newStudents, students[student])
+			newStudents = append(newStudents, students[i])
+		}
+	}
+
+	//fmt.Println("\n\nNEW ", newStudents)
+	js, err := json.Marshal(newStudents)
+	if writeErr(err, w) {
+		return
+	}
+
+	_, err = db.Exec(`UPDATE classes 
+                    SET students=$1
+                    WHERE cid=$2`, string(js), cid)
+	if writeErr(err, w) {
+		ERROR.Println("Update Student - UPDATE cid=", cid)
+		return
+	}
+	TRACE.Println("Update Student - UPDATE cid=", cid)
+
+	student := make(map[string]string)
+	student["email"] = id.Email
+	student["fname"] = fname
+	student["lname"] = lname
+	student["sid"] = id.Sid
+
+	go sendStudentClassEmail(cid, cname, student)
+
+	writeSuccess(w)
+
 }
 
 func handleClassGet(w http.ResponseWriter, r *http.Request) {
@@ -421,6 +586,55 @@ func handleQuizDelete(w http.ResponseWriter, r *http.Request) {
 	TRACE.Println("Delete Quiz - DELETE qid=" + strconv.Itoa(qid))
 	writeSuccess(w)
 }
+
+//Expecting
+//    {
+//      grades : {
+//        studentid (int) : grade (int),
+//        ...
+//      }
+//    }
+//
+//experimenting
+//func handleGradeList(w http.ResponseWriter, r *http.Request) {
+//fmt.Println("here")
+
+//auth := auth(r)
+//if auth == nil {
+//writeErr(fmt.Errorf("User not authenticated"), w)
+//WARNING.Println("Get Grade List - User not authenticated")
+//return
+//}
+
+//cid := mux.Vars(r)["id"]
+
+//g := struct {
+//Sid   int `json:"studentid"`
+//Grade int `json:"grade"`
+//}{}
+
+//err := json.NewDecoder(r.Body).Decode(&g)
+//if writeErr(err, w) {
+//return
+//}
+
+////find name for each student
+//rows, err := db.Query(`
+//SELECT students->>'fname'
+//FROM classes
+//WHERE classes.cid = $1
+//AND students->>'sid' = $2`, cid, g.Sid)
+//if writeErr(err, w) {
+//ERROR.Println("Get Grade List - SELECT")
+//return
+//}
+
+//defer rows.Close()
+//for rows.Next() {
+//fmt.Println(rows)
+//}
+
+//}
 
 // GET /quiz
 // GET /classes/{cid}/quiz
