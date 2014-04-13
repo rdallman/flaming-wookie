@@ -68,6 +68,7 @@ func main() {
 	r.HandleFunc("/quiz", handleQuizList).Methods("GET")
 	r.HandleFunc("/quiz/{id:[0-9]+}", handleQuizGet).Methods("GET")
 	r.HandleFunc("/quiz/{id:[0-9]+}", handleQuizDelete).Methods("DELETE")
+	r.HandleFunc("/quiz/{id:[0-9]+}/grades", handleGetQuizGrades).Methods("GET")
 	//TODO r.HandleFunc("/quiz/{id:[0-9]+}", handleQuizUpdate).Methods("POST")
 
 	//Javascript pages

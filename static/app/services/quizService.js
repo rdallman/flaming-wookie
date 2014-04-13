@@ -8,6 +8,13 @@ angular.module('dashboardApp').factory('quizService', function($http) {
       })
     },
 
+    getGrades: function(qid) {
+      return $http({
+        method: 'GET',
+        url: '/quiz/' + qid + '/grades'
+      })
+    },
+
     deleteQuiz: function(qid) {
       return $http({
         method: 'DELETE',

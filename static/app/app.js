@@ -20,11 +20,11 @@ dashboardApp.config(['$routeProvider',
                           templateUrl: '/templates/partials/class-form.html',
                           controller: 'ClassController'
                         }).
-                        when('/quiz/:id', {
+                        when('/quiz/:qid', {
                           templateUrl: '/templates/partials/quiz.html',
                           controller: 'QuizController'
                         }).
-                        when('/quiz/:id/grades', {
+                        when('/classes/:cid/quiz/:qid/grades', {
                           templateUrl: '/templates/partials/grades.html',
                           controller: 'QuizController'
                         }).
@@ -32,7 +32,7 @@ dashboardApp.config(['$routeProvider',
                           templateUrl: '/templates/partials/classes.html',
                           controller: 'ClassController'
                         }).
-                        when('/classes/:id', {
+                        when('/classes/:cid', {
                           templateUrl: '/templates/partials/class.html',
                           controller: 'ClassController'
                         }).
@@ -44,7 +44,7 @@ dashboardApp.config(['$routeProvider',
                           templateUrl: '/templates/partials/quiz-form.html',
                           controller: 'QuizController'
                         }).
-                        when('/classes/:id/edit', {
+                        when('/classes/:cid/edit', {
                           templateUrl: '/templates/partials/class-form.html',
                           controller: 'ClassController'
                         }).
@@ -67,6 +67,15 @@ filters = angular.module('customFilters', []);
 filters.filter('abc', function() {
   return function(input) {
     return String.fromCharCode(input + 65);
+  };
+});
+filters.filter('gradeNA', function() {
+  return function(input) {
+    if (input < 0) {
+      return "NA";
+    } else {
+      return input;
+    }
   };
 });
 
