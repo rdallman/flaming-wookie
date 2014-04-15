@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"net/smtp"
 	"strconv"
 	"text/template"
@@ -42,15 +43,28 @@ Sincerely,
 func sendStudentClassEmail(cid int, classname string, student map[string]string) {
 	var err error
 
+	cidStr := strconv.Itoa(cid)
+	link := fmt.Sprintf(`http://%s:%s@wooquiz.com`, student["sid"], cidStr)
 	//create text for email
 	var doc bytes.Buffer
 	context := SmtpTemplateData{
-		"WooQuiz",
-		classname + " Class Registration",
-		"Hello " + student["fname"] + " " + student["lname"] + "," +
-			"\n\nYou have been added to the class " + classname + " on WooQuiz.com!" +
-			"\nClass ID: " + strconv.Itoa(cid) +
-			"\nStudent ID: " + student["sid"],
+		From:    "WooQuiz",
+		Subject: fmt.Sprintf("%s Class Registration", classname),
+		Body: fmt.Sprintf(`Hello %s %s,
+
+You have been added to the class %s on WooQuiz.com!
+
+  Class ID: %s 
+  Student ID: %s
+
+Either enter the above information or click the link below on your mobile to automatically add the class.
+
+%s
+
+Good Luck!
+
+--
+WooQuiz`, student["fname"], student["lname"], classname, cidStr, student["sid"], link),
 	}
 
 	//template email
