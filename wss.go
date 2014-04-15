@@ -58,7 +58,7 @@ func studServer(ws *websocket.Conn) {
 	}
 	s.conns[ws] = true
 
-	if s.state != math.MaxInt64 {
+	if s.state != math.MaxInt32 {
 		websocket.JSON.Send(ws, s.questions[s.state])
 	}
 
@@ -147,7 +147,7 @@ func newSession(qid string) string {
 		qid:        qid,
 		title:      title,
 		questions:  qs,
-		state:      math.MaxInt64,
+		state:      math.MaxInt32,
 		registered: students,
 		conns:      make(map[*websocket.Conn]bool),
 	}
