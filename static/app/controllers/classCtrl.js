@@ -5,7 +5,7 @@
 angular.module('dashboardApp').controller('ClassController', function (classService, quizService, $scope, $http, $route, $routeParams, $location, flash) {
 
   $scope.classList = [];
-  $scope.id = -1;
+  $scope.cid = -1;
   $scope.quizList = [];
 
   $scope.class = {
@@ -17,7 +17,7 @@ angular.module('dashboardApp').controller('ClassController', function (classServ
 
 
   // class list
-  if ($routeParams.id === undefined) {
+  if ($routeParams.cid === undefined) {
     classService.getClasses().
     success(function(data) {
       console.log(data);
@@ -31,11 +31,11 @@ angular.module('dashboardApp').controller('ClassController', function (classServ
   }
   // specific class
   else {
-    classService.getClass($routeParams.id).
+    classService.getClass($routeParams.cid).
     success(function(data) {
       if (data !== undefined) {
         $scope.class = data["info"]
-        $scope.id = $routeParams.id;
+        $scope.cid = $routeParams.cid;
         // we're editing the class
         // TODO better way to check path that has id param...
         if ($location.$$path.match(/(\/classes\/[0-9]+\/edit)/)) {
@@ -48,7 +48,7 @@ angular.module('dashboardApp').controller('ClassController', function (classServ
     });
 
     // get quizzes
-    quizService.getQuizzes($routeParams.id).
+    quizService.getQuizzes($routeParams.cid).
     success(function(data) {
       $scope.quizList = data.info
     }).
@@ -60,7 +60,7 @@ angular.module('dashboardApp').controller('ClassController', function (classServ
   $scope.createClass = function() {
     if ($location.$$path.match(/(\/classes\/[0-9]+\/edit)/)) {
       // TODO save class updates
-      $location.path('/classes/' + $routeParams.id);
+      $location.path('/classes/' + $routeParams.cid);
     }
     else {
       if ($scope.classform.$valid) {
@@ -108,6 +108,15 @@ angular.module('dashboardApp').controller('ClassController', function (classServ
       $scope.quizList.splice(index, 1);
     }).error(function(data) {
         alert("Error: Could not delete quiz");
+      });
+  }
+
+  $scope.deleteClass = function(cid, index) {
+    classService.deleteClass(cid).success(function(data) {
+      $scope.classList.splice(index, 1);
+      $location.path('/main');
+    }).error(function(data) {
+        alert("Error: Could not delete class");
       });
   }
 });

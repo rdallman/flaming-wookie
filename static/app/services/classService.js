@@ -4,10 +4,10 @@
 angular.module('dashboardApp').factory('classService', function($http, $route, $routeParams) {
 
   return {
-    getClass: function(id) {
+    getClass: function(cid) {
       return $http({
         method: 'GET',
-        url: '/classes/' + id
+        url: '/classes/' + cid
       })
     },
 
@@ -27,11 +27,18 @@ angular.module('dashboardApp').factory('classService', function($http, $route, $
       })
     },
 
+    deleteClass: function(cid) {
+      return $http({
+        method: 'DELETE',
+        url: '/classes/' + cid
+      })
+    },
+
     addStudent: function(email, fname, lname) {
       return $http({
         method: 'POST',
-        url: '/classes/' + $routeParams.id + '/student',
-        data: angular.toJson({cid: parseInt($routeParams.id), email: email, fname: fname, lname: lname}),
+        url: '/classes/' + $routeParams.cid + '/student',
+        data: angular.toJson({cid: parseInt($routeParams.cid), email: email, fname: fname, lname: lname}),
         headers: {'Content-Type': 'application/json'}
       })
     }

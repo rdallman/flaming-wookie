@@ -5,9 +5,10 @@ angular.module('dashboardApp').controller('QuizController', function (quizSessio
 
   // used for traversing quiz in html
   $scope.current = -1;
-  $scope.id = -1;
-  $scope.classId;
+  $scope.qid = -1;
+  $scope.cid;
   $scope.className;
+  $scope.grades;
 
   $scope.classes = [];
 
@@ -20,18 +21,29 @@ angular.module('dashboardApp').controller('QuizController', function (quizSessio
 
   $scope.quizlist = []
 
-  if ($routeParams.id !== undefined) {	
-    quizService.getQuiz($routeParams.id).success(function(data) {
+  if ($routeParams.qid !== undefined) {	
+    quizService.getQuiz($routeParams.qid).success(function(data) {
       if (data !== undefined) {
         $scope.quiz = data["info"]
-        $scope.id = $routeParams.id;
+        $scope.qid = $routeParams.qid;
+        //alert($scope.quiz.grades.length > 0);
       }
     }).error(function(data) {
       // handle error
     });
   }
 
-  if ($location.$$path === "/quizzes") {
+  if ($routeParams.cid !== undefined) {
+    classService.getClass($routeParams.cid).success(function(data){
+      if (data !== undefined) {
+        $scope.className = data["info"]["name"];
+        $scope.cid = $routeParams.cid;
+      }
+    });
+
+  }
+
+  /*if ($location.$$path === "/quizzes") {
     $http({
       method: 'GET',
       url: '/quiz'
@@ -41,19 +53,19 @@ angular.module('dashboardApp').controller('QuizController', function (quizSessio
     }).error(function(data) {
 
     });
-  }
+  }*/
 
-  if ($location.$$path.match(/(\/classes\/[0-9]+\/new-quiz)/)) {
+  /*if ($location.$$path.match(/(\/classes\/[0-9]+\/new-quiz)/)) {
     // creating a quiz
-    $scope.classId = $routeParams.cid;
-    classService.getClass($scope.classId).success(function(data){
+    $scope.cid = $routeParams.cid;
+    classService.getClass($scope.cid).success(function(data){
       if (data !== undefined) {
         $scope.className = data["info"]["name"];
       }
     }).error(function(data){
       //handle error
     });
-  }
+  }*/
 
   $scope.addQuestion = function() {
     if ($scope.questionform.$valid) {
@@ -82,11 +94,18 @@ angular.module('dashboardApp').controller('QuizController', function (quizSessio
 
   $scope.postQuiz = function() {
     if ($scope.quizform.$valid) {
-      quizService.createQuiz($scope.classId, $scope.quiz);
+      quizService.createQuiz($scope.cid, $scope.quiz);
       $location.path('/quizzes');
       document.getElementById("flash").setAttribute("class", "alert alert-success");
       flash("You created a quiz!");
     }
+  }
+
+ if ($location.$$path.match(/(\/classes\/[0-9]+\/quiz\/[0-9]+\/grades)$/)) {
+      quizService.getGrades($routeParams.qid).success(function(data) {
+        $scope.grades = data["info"]
+      });
+      
   }
 
 
@@ -96,9 +115,9 @@ angular.module('dashboardApp').controller('QuizController', function (quizSessio
    * SESSION STUFF
    * */
 
-  if ($location.$$path.match(/(\/quiz\/[0-9]+)/)) {
+  if ($location.$$path.match(/(\/quiz\/[0-9]+)$/)) {
     // open dat socket
-    quizSessionService.startSession($routeParams.id);
+    quizSessionService.startSession($routeParams.qid);
   }
 
   // start the quiz, send state of 0 to the server

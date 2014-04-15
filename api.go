@@ -430,6 +430,7 @@ func handleClassDelete(w http.ResponseWriter, r *http.Request) {
 	auth := auth(r)
 	if auth == nil {
 		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Delete Class - User not authenticated")
 		return
 	}
 	vars := mux.Vars(r)
@@ -441,16 +442,19 @@ func handleClassDelete(w http.ResponseWriter, r *http.Request) {
 	_, err = db.Exec(`DELETE FROM quiz 
                     WHERE cid=$1`, cid)
 	if writeErr(err, w) {
+		ERROR.Println("Delete Class - DELETE FROM quiz WHERE cid=" + strconv.Itoa(cid))
 		return
 	}
 
 	_, err = db.Exec(`DELETE FROM classes 
                     WHERE cid=$1`, cid)
 	if writeErr(err, w) {
+		ERROR.Println("Delete Class - DELETE cid=" + strconv.Itoa(cid))
 		return
 	} else {
 		writeSuccess(w)
 	}
+	TRACE.Println("Delete Class - DELETE cid=" + strconv.Itoa(cid))
 }
 
 // TODO: flash message to show quiz was added, and redirect
@@ -655,7 +659,7 @@ func handleQuizList(w http.ResponseWriter, r *http.Request) {
 	//TODO maybe fall through with string.. handling of rows is bad
 	if cid, ok := vars["cid"]; ok {
 		rows, err = db.Query(`
-      SELECT qid, info->>'title', name
+      SELECT qid, info->>'title', info->>'grades', name
       FROM quiz, classes
       WHERE classes.uid = $1
       AND classes.cid = $2
@@ -663,7 +667,7 @@ func handleQuizList(w http.ResponseWriter, r *http.Request) {
       `, auth.Uid, cid)
 	} else {
 		rows, err = db.Query(`
-      SELECT qid, info->>'title', name
+      SELECT qid, info->>'title', info->>'grades', name
       FROM quiz, classes
       WHERE classes.uid = $1
       AND classes.cid = quiz.cid
@@ -679,12 +683,99 @@ func handleQuizList(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		var qid int
-		var title, name string
-		err = rows.Scan(&qid, &title, &name)
+		var title, name, gradesString string
+		var grades map[string]int
+		err = rows.Scan(&qid, &title, &gradesString, &name)
 		if writeErr(err, w) {
 			return
 		}
-		qs = append(qs, map[string]interface{}{"title": title, "qid": qid, "name": name})
+		err = json.Unmarshal([]byte(gradesString), &grades)
+
+		qs = append(qs, map[string]interface{}{"title": title, "qid": qid, "name": name, "showGrades": len(grades) > 0})
 	}
 	writeSuccess(w, qs)
+}
+
+func handleGetQuizGrades(w http.ResponseWriter, r *http.Request) {
+	//title and id, return JSON
+	auth := auth(r)
+	if auth == nil {
+		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Get Quiz Grades - User not authenticated")
+		return
+	}
+
+	vars := mux.Vars(r)
+	qid, err := strconv.Atoi(vars["id"])
+	if writeErr(err, w) {
+		return
+	}
+
+	//get cid and quizinfo from quiz
+	var cid int
+	var quizinfo string
+	err = db.QueryRow(`SELECT cid, info FROM quiz WHERE qid=$1`, qid).Scan(&cid, &quizinfo)
+	if writeErr(err, w) {
+		ERROR.Println("Get Quiz Grades - SELECT qid=" + strconv.Itoa(qid))
+		return
+	}
+
+	//get students from class
+	var studentJson string
+	err = db.QueryRow(`SELECT students FROM classes WHERE uid = $1 AND cid = $2`, auth.Uid, cid).Scan(&studentJson)
+	if writeErr(err, w) {
+		ERROR.Println("Get Quiz Grades - SELECT cid=" + strconv.Itoa(cid))
+		return
+	}
+
+	//unmarshal quiz
+	var quiz Quiz
+	err = json.Unmarshal([]byte(quizinfo), &quiz)
+	if writeErr(err, w) {
+		ERROR.Println("Get Quiz Grades - unmarshal quiz=" + strconv.Itoa(qid))
+		return
+	}
+
+	//unmarshal students
+	var students []map[string]string
+	err = json.Unmarshal([]byte(studentJson), &students)
+	if writeErr(err, w) {
+		ERROR.Println("Get Quiz Grades - unmarshal students=" + strconv.Itoa(cid))
+		return
+	}
+
+	// check if the quiz was taken
+	if len(quiz.Grades) == 0 {
+		writeSuccess(w, map[string]bool{"found":false})
+		return
+	}
+	//map student name with their grade	
+	min := 100
+	max := 0
+	total := 0
+	count := 0
+	var studentGrades = make(map[string]int)
+	for _, student := range students {
+		if grade, found := quiz.Grades[student["sid"]]; found {
+			studentGrades[student["fname"] + " " + student["lname"]] = grade
+			if grade < min {
+				min = grade
+			}
+			if grade > max {
+				max = grade
+			}
+			total += grade
+			count += 1
+		} else {
+			studentGrades[student["fname"] + " " + student["lname"]] = -1
+		}
+	}
+
+	var gradeReturn = make(map[string]interface{})
+	gradeReturn["max"] = max
+	gradeReturn["min"] = min
+	gradeReturn["avg"] = total/count
+	gradeReturn["studentGrades"] = studentGrades
+
+	writeSuccess(w, gradeReturn)
 }
