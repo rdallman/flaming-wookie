@@ -44,7 +44,7 @@ func sendStudentClassEmail(cid int, classname string, student map[string]string)
 	var err error
 
 	cidStr := strconv.Itoa(cid)
-	link := fmt.Sprintf(`http://%s:%s@wooquiz.com`, student["sid"], cidStr)
+	link := fmt.Sprintf(`http://wooquiz.com/%s/%s`, cidStr, student["sid"])
 	//create text for email
 	var doc bytes.Buffer
 	context := SmtpTemplateData{
