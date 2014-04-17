@@ -63,7 +63,7 @@ func main() {
 	r.HandleFunc("/classes/{cid:[0-9]+}/quiz", handleQuizCreate).Methods("POST")
 	r.HandleFunc("/classes/{cid:[0-9]+}/student", handleAddStudent).Methods("POST")
 	r.HandleFunc("/classes/{cid:[0-9]+}/student", handleDeleteStudent).Methods("DELETE")
-	r.HandleFunc("/classes/{cid:[0-9]+}/student/update", handleUpdateStudent).Methods("POST")
+	r.HandleFunc("/classes/{cid:[0-9]+}/student", handleUpdateStudent).Methods("PUT")
 	//API quiz methods (api.go)
 	//r.HandleFunc("/quiz/{id:[0-9]+}/grades", handleGradeList).Methods("GET")
 	r.HandleFunc("/quiz", handleQuizList).Methods("GET")

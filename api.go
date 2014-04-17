@@ -10,7 +10,6 @@ import (
 	_ "github.com/lib/pq"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 // Expecting http body with JSON of form:
@@ -149,14 +148,12 @@ func handleAddStudent(w http.ResponseWriter, r *http.Request) {
 
 	go sendStudentClassEmail(j.Cid, cname, student)
 
-	fmt.Println("TESTING: ", student)
-
 	writeSuccess(w, student)
 }
 
 // URL: /classes/{cid}/students
 //
-//Expecting JSON :
+// Expecting
 // {
 //   "sid": string
 // }
@@ -169,11 +166,10 @@ func handleDeleteStudent(w http.ResponseWriter, r *http.Request) {
 	}
 	cid := mux.Vars(r)["cid"]
 
-	decoder := json.NewDecoder(r.Body)
-	id := struct {
+	student := struct {
 		Sid string `json:"sid"`
 	}{}
-	err := decoder.Decode(&id)
+	err := json.NewDecoder(r.Body).Decode(&student)
 	if writeErr(err, w) {
 		return
 	}
@@ -194,19 +190,14 @@ func handleDeleteStudent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//fmt.Println("id.SID ", id.Sid)
-	var newStudents []map[string]string
-	for i, _ := range students {
-		//fmt.Println("\nsid ", students[i]["sid"])
-		if !strings.EqualFold(students[i]["sid"], id.Sid) {
-			//fmt.Println(" !=  ", students[i]["sid"])
-			//append(newStudents, students[student])
-			newStudents = append(newStudents, students[i])
+	for i := 0; i < len(students); i++ {
+		if students[i]["sid"] == student.Sid {
+			students = append(students[:1], students[i+1:]...)
+			break
 		}
 	}
 
-	//fmt.Println("\n\nNEW ", newStudents)
-	js, err := json.Marshal(newStudents)
+	js, err := json.Marshal(students)
 	if writeErr(err, w) {
 		return
 	}
@@ -226,12 +217,13 @@ func handleDeleteStudent(w http.ResponseWriter, r *http.Request) {
 
 // URL: /classes/{cid}/students
 //
-//Expecting JSON :
+// Expecting:
 // {
 //   "sid": string
+//   "fname": string
+//   "lname": string
 //   "email": string
 // }
-//TODO make this a little nicer..
 func handleUpdateStudent(w http.ResponseWriter, r *http.Request) {
 	user := auth(r)
 	if auth == nil {
@@ -245,12 +237,13 @@ func handleUpdateStudent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
-	id := struct {
+	student := struct {
 		Sid   string `json:"sid"`
+		Fname string `json:"fname"`
+		Lname string `json:"lname"`
 		Email string `json:"email"`
 	}{}
-	err = decoder.Decode(&id)
+	err = json.NewDecoder(r.Body).Decode(&student)
 	if writeErr(err, w) {
 		return
 	}
@@ -271,27 +264,22 @@ func handleUpdateStudent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//fmt.Println("id.SID ", id.Sid)
-	var newStudents []map[string]string
-	var fname string
-	var lname string
-	for i, _ := range students {
-		//fmt.Println("\nsid ", students[i]["sid"])
-		if strings.EqualFold(students[i]["sid"], id.Sid) {
-			//fmt.Println("\nEQUAL", students[i]["sid"], " ", id.Sid)
-			students[i]["email"] = id.Email
-			fname = students[i]["fname"]
-			lname = students[i]["lname"]
-			newStudents = append(newStudents, students[i])
-		} else {
-			//fmt.Println("\nNOT EQUAL ", students[i]["sid"])
-			//append(newStudents, students[student])
-			newStudents = append(newStudents, students[i])
+	for i := 0; i < len(students); i++ {
+		if students[i]["sid"] == student.Sid {
+			if student.Email != "" {
+				students[i]["email"] = student.Email
+			}
+			if student.Fname != "" {
+				students[i]["fname"] = student.Fname
+			}
+			if student.Lname != "" {
+				students[i]["lname"] = student.Lname
+			}
+			break
 		}
 	}
 
-	//fmt.Println("\n\nNEW ", newStudents)
-	js, err := json.Marshal(newStudents)
+	js, err := json.Marshal(students)
 	if writeErr(err, w) {
 		return
 	}
@@ -304,14 +292,6 @@ func handleUpdateStudent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	TRACE.Println("Update Student - UPDATE cid=", cid)
-
-	student := make(map[string]string)
-	student["email"] = id.Email
-	student["fname"] = fname
-	student["lname"] = lname
-	student["sid"] = id.Sid
-
-	go sendStudentClassEmail(cid, cname, student)
 
 	writeSuccess(w)
 
@@ -746,10 +726,10 @@ func handleGetQuizGrades(w http.ResponseWriter, r *http.Request) {
 
 	// check if the quiz was taken
 	if len(quiz.Grades) == 0 {
-		writeSuccess(w, map[string]bool{"found":false})
+		writeSuccess(w, map[string]bool{"found": false})
 		return
 	}
-	//map student name with their grade	
+	//map student name with their grade
 	min := 100
 	max := 0
 	total := 0
@@ -757,7 +737,7 @@ func handleGetQuizGrades(w http.ResponseWriter, r *http.Request) {
 	var studentGrades = make(map[string]int)
 	for _, student := range students {
 		if grade, found := quiz.Grades[student["sid"]]; found {
-			studentGrades[student["fname"] + " " + student["lname"]] = grade
+			studentGrades[student["fname"]+" "+student["lname"]] = grade
 			if grade < min {
 				min = grade
 			}
@@ -767,14 +747,14 @@ func handleGetQuizGrades(w http.ResponseWriter, r *http.Request) {
 			total += grade
 			count += 1
 		} else {
-			studentGrades[student["fname"] + " " + student["lname"]] = -1
+			studentGrades[student["fname"]+" "+student["lname"]] = -1
 		}
 	}
 
 	var gradeReturn = make(map[string]interface{})
 	gradeReturn["max"] = max
 	gradeReturn["min"] = min
-	gradeReturn["avg"] = total/count
+	gradeReturn["avg"] = total / count
 	gradeReturn["studentGrades"] = studentGrades
 
 	writeSuccess(w, gradeReturn)

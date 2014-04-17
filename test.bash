@@ -37,9 +37,10 @@ outputAddStudent=$(curl -s -X POST -d "{\"cid\":158, \"email\":\"email@email.com
 sid=$(expr "$outputAddStudent" : '.*"sid":"\(.\{16\}\)')
   #echo $sid
 #Update student email
-curl -s -X POST -d "{\"sid\":\"$sid\", \"email\":\"email1@email.com\"}" -b $cookies http://localhost:8080/classes/$cid/student/update | grep -q '"success":true' || (echo "expected success: update student"; fail=1)
+curl -s -X PUT -d "{\"sid\":\"$sid\", \"fname\":\"fnameUPDATE\", \"email\":\"emailUPDATE@email.com\"}" -b $cookies http://localhost:8080/classes/$cid/student | grep -q '"success":true' || (echo "expected success: update student"; fail=1)
 #Delete student
-curl -s -X DELETE -d "{\"sid\":\"$sid\"}" -b $cookies http://localhost:8080/classes/$cid/student
+curl -s -X DELETE -d "{\"sid\":\"$sid\"}" -b $cookies http://localhost:8080/classes/$cid/student | grep -q '"success":true' || (echo "expected success: delete student"; fail=1)
+
 
 #TODO fix these with new frontend
 #curl -s -X PUT -d "{\"state\":0}" -b $cookies http://localhost:8080/dashboard/#/quiz/117 | grep -q '"success":true' || (echo "expected success: /quiz 117 state"; fail=1)
