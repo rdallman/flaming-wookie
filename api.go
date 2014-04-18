@@ -571,55 +571,6 @@ func handleQuizDelete(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w)
 }
 
-//Expecting
-//    {
-//      grades : {
-//        studentid (int) : grade (int),
-//        ...
-//      }
-//    }
-//
-//experimenting
-//func handleGradeList(w http.ResponseWriter, r *http.Request) {
-//fmt.Println("here")
-
-//auth := auth(r)
-//if auth == nil {
-//writeErr(fmt.Errorf("User not authenticated"), w)
-//WARNING.Println("Get Grade List - User not authenticated")
-//return
-//}
-
-//cid := mux.Vars(r)["id"]
-
-//g := struct {
-//Sid   int `json:"studentid"`
-//Grade int `json:"grade"`
-//}{}
-
-//err := json.NewDecoder(r.Body).Decode(&g)
-//if writeErr(err, w) {
-//return
-//}
-
-////find name for each student
-//rows, err := db.Query(`
-//SELECT students->>'fname'
-//FROM classes
-//WHERE classes.cid = $1
-//AND students->>'sid' = $2`, cid, g.Sid)
-//if writeErr(err, w) {
-//ERROR.Println("Get Grade List - SELECT")
-//return
-//}
-
-//defer rows.Close()
-//for rows.Next() {
-//fmt.Println(rows)
-//}
-
-//}
-
 // GET /quiz
 // GET /classes/{cid}/quiz
 func handleQuizList(w http.ResponseWriter, r *http.Request) {
