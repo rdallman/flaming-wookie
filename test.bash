@@ -19,13 +19,13 @@ output=$(curl -s -X POST -d "{\"name\":\"myclass\", \"students\": [{\"email\":\"
   #echo $cid
 
 #GET /classes  
-curl -s -X GET -b $cookies http://localhost:8080/classes | grep -q '"success":true' || (echo "expected success: GET /classes" && fail=1) 
+curl -s -X GET -b $cookies http://localhost:8080/classes | (grep -q '"success":false' && fail=1 echo 'expected success: GET classes') 
 
 #GET 'myclass'
-curl -s -X GET -b $cookies http://localhost:8080/classes/$cid | grep -q '"success":true' || (echo "expected success: GET /classes/$cid" && fail=1) 
+curl -s -X GET -b $cookies http://localhost:8080/classes/$cid | (grep -q '"success":false' && fail=1 echo 'expected success: get class $cid')
 
 #Update 'myclass' name to 'updated'
-curl -s -X POST -d "{\"name\":\"updated\"}" -b $cookies http://localhost:8080/classes/$cid | grep -q '"success":true' || (echo "expected success: POST /classes" && fail=1) 
+curl -s -X POST -d "{\"name\":\"updated\"}" -b $cookies http://localhost:8080/classes/$cid | (grep -q '"success":false' && fail=1 echo 'expected success: update class')
 
 #Create quiz for 'updated'
 output1=$(curl -s -X POST -d "{\"title\":\"myquiz\", \"questions\":[{\"text\":\"Are there many like it?\",\"answers\":[\"Yay\",\"Nay\"],\"correct\":0}],\"grades\":{}}" -b $cookies http://localhost:8080/classes/$cid/quiz)
@@ -37,9 +37,17 @@ outputAddStudent=$(curl -s -X POST -d "{\"cid\":158, \"email\":\"email@email.com
 sid=$(expr "$outputAddStudent" : '.*"sid":"\(.\{16\}\)')
   #echo $sid
 #Update student email
-curl -s -X PUT -d "{\"sid\":\"$sid\", \"fname\":\"fnameUPDATE\", \"email\":\"emailUPDATE@email.com\"}" -b $cookies http://localhost:8080/classes/$cid/student | grep -q '"success":true' || (echo "expected success: update student"; fail=1)
+curl -s -X PUT -d "{\"sid\":\"$sid\", \"fname\":\"fnameUPDATE\", \"email\":\"emailUPDATE@email.com\"}" -b $cookies http://localhost:8080/classes/$cid/student | (grep -q '"success":false' && fail=1 echo 'expected success: update student')
 #Delete student
-curl -s -X DELETE -d "{\"sid\":\"$sid\"}" -b $cookies http://localhost:8080/classes/$cid/student | grep -q '"success":true' || (echo "expected success: delete student"; fail=1)
+curl -s -X DELETE -d "{\"sid\":\"$sid\"}" -b $cookies http://localhost:8080/classes/$cid/student | (grep -q '"success":false' && fail=1  echo 'expected success: delete student')
+
+#GET /quiz handleQuizList
+curl -s -X GET -b $cookies http://localhost:8080/quiz | (  grep -q '"success":false'  &&  fail=1 echo 'expected success: list quizzes' )
+#GET /quiz/$qid handleQuizGet
+curl -s -X GET -b $cookies http://localhost:8080/quiz/$qid | (grep -q '"success":false' && fail=1 echo 'expected success: get quiz $qid')
+##DELETE /quiz/$qid handleQuizDelete
+curl -s -X DELETE -b $cookies http://localhost:8080/quiz/$qid | (grep -q '"success":false' && fail=1 echo 'delete quiz')
+
 
 
 #TODO fix these with new frontend
@@ -48,9 +56,6 @@ curl -s -X DELETE -d "{\"sid\":\"$sid\"}" -b $cookies http://localhost:8080/clas
 #curl -s -X PUT -d "{\"state\":-1}" -b $cookies http://localhost:8080/quiz/117/state | grep -q '"success":true' || (echo "expected success: /quiz 117 state" && fail=1)
 
 #Clean up db
-curl -s -X DELETE -b $cookies http://localhost:8080/classes/$cid | grep -q '"success":true' || (echo "expected success: DELETE /classes" && fail=1) 
-#echo "select * from classes" |  psql -h absker.com -U wookie
+curl -s -X DELETE -b $cookies http://localhost:8080/classes/$cid | (grep -q '"success":false' && fail=1 echo 'expected success: delete class $cid')
+#echo "select * from classes" |  psql -h absker.com -U wooki
 
-if [ "$fail" -eq 0 ]; then
-  echo "pass" 
-fi
