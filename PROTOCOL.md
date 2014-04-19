@@ -77,7 +77,7 @@ None
   [
     { 
       "name": string,
-      "cid": int
+      "students": []map[string]string
     },
     ...
   ]
@@ -88,7 +88,7 @@ Where:
 
 "name": A string representing the name of the class
 
-"cid": A positive integer representing class id.
+"students": A list of students containing email, last name, first name, and student id.
 
 ### Create Class
 
@@ -106,7 +106,7 @@ Valid cookie
 {
   "name": string,
   "students": {
-    string : string,
+    id : name,
     ...
   }
 }
@@ -125,11 +125,49 @@ DEPRECATED this will be changing to hashes as unique ID
 ```json
 {
   "success": true
+  "info": cid
 }
 ```
 
+Where:
+
+"info" is the class id in the database.
+
 ### Get Class
-### Edit Class //add student this?
+### Edit Class 
+##### URL
+
+POST /classes/{cid}/
+
+Where:
+
+{cid} is a positive integer representing a valid class id
+
+##### Authentication
+
+Valid cookie for owner of given {cid}
+
+##### Input
+
+```json
+{
+  "name": string,
+}
+```
+
+Where:
+
+"name" is a string representing the new class name
+
+##### Success Output
+
+```json
+{
+  "success": true
+}
+```
+
+
 ### Delete Class
 ### Add Student
 
@@ -167,8 +205,48 @@ Where:
 ```json
 {
   "success": true
+  "info": student
 }
 ```
+
+Where:
+
+"info" is the students first name, last name, email, and sid.
+
+
+### Delete Student
+##### URL
+
+DELETE /classes/{cid}/students
+
+Where:
+
+{cid} is a positive integer representing a valid class id
+
+##### Authentication
+
+Valid cookie for owner of given {cid}
+
+##### Input
+
+```json
+{
+  "sid": string
+}
+```
+
+Where:
+
+"sid" is a student id number
+
+##### Success Output
+
+```json
+{
+  "success": true
+}
+```
+
 
 ### List Quizzes for Class
 
@@ -199,6 +277,7 @@ None
       "title": string,
       "qid": int,
       "name": string
+      "showGrades": 
     },
     ...
   ]
@@ -213,6 +292,7 @@ Where:
 
 "name" is the name of the class the quiz is for //TODO REDUNDANT, only needed for /quiz
 
+"showGrades" is string of students and their respective grades
 ## Quiz Methods
 
 ### Create Quiz
@@ -273,8 +353,13 @@ this is fine (currently they'll get overwritten later anyway).
 ```json
 {
   "success": true
+  "info": int
 }
 ```
+
+Where:
+
+"info" is the quiz id in the database.
 
 ### List Quizzes [for teacher]
 

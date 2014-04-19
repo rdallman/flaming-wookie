@@ -6,11 +6,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"strconv"
-
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"net/http"
+	"strconv"
 )
 
 // Expecting http body with JSON of form:
@@ -149,7 +148,153 @@ func handleAddStudent(w http.ResponseWriter, r *http.Request) {
 
 	go sendStudentClassEmail(j.Cid, cname, student)
 
+	writeSuccess(w, student)
+}
+
+// URL: /classes/{cid}/students
+//
+// Expecting
+// {
+//   "sid": string
+// }
+func handleDeleteStudent(w http.ResponseWriter, r *http.Request) {
+	user := auth(r)
+	if auth == nil {
+		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Delete Student - User not authenticated")
+		return
+	}
+	cid := mux.Vars(r)["cid"]
+
+	student := struct {
+		Sid string `json:"sid"`
+	}{}
+	err := json.NewDecoder(r.Body).Decode(&student)
+	if writeErr(err, w) {
+		return
+	}
+
+	var jstring, cname string
+	err = db.QueryRow(`SELECT name, students 
+                     FROM classes 
+                     WHERE uid = $1 
+                     AND cid = $2`, user.Uid, cid).Scan(&cname, &jstring)
+	if writeErr(err, w) {
+		ERROR.Println("Delete Student - SELECT cid=" + cid)
+		return
+	}
+
+	var students []map[string]string
+	err = json.Unmarshal([]byte(jstring), &students)
+	if writeErr(err, w) {
+		return
+	}
+
+	for i := 0; i < len(students); i++ {
+		if students[i]["sid"] == student.Sid {
+			students = append(students[:1], students[i+1:]...)
+			break
+		}
+	}
+
+	js, err := json.Marshal(students)
+	if writeErr(err, w) {
+		return
+	}
+
+	_, err = db.Exec(`UPDATE classes 
+                    SET students=$1
+                    WHERE cid=$2`, string(js), cid)
+	if writeErr(err, w) {
+		ERROR.Println("Delete Student - UPDATE cid=" + cid)
+		return
+	}
+	TRACE.Println("Add Student - UPDATE cid=" + cid)
+
 	writeSuccess(w)
+
+}
+
+// URL: /classes/{cid}/students
+//
+// Expecting:
+// {
+//   "sid": string
+//   "fname": string
+//   "lname": string
+//   "email": string
+// }
+func handleUpdateStudent(w http.ResponseWriter, r *http.Request) {
+	user := auth(r)
+	if auth == nil {
+		writeErr(fmt.Errorf("User not authenticated"), w)
+		WARNING.Println("Update Student - User not authenticated")
+		return
+	}
+	vars := mux.Vars(r)
+	cid, err := strconv.Atoi(vars["cid"])
+	if writeErr(err, w) {
+		return
+	}
+
+	student := struct {
+		Sid   string `json:"sid"`
+		Fname string `json:"fname"`
+		Lname string `json:"lname"`
+		Email string `json:"email"`
+	}{}
+	err = json.NewDecoder(r.Body).Decode(&student)
+	if writeErr(err, w) {
+		return
+	}
+
+	var jstring, cname string
+	err = db.QueryRow(`SELECT name, students 
+                     FROM classes 
+                     WHERE uid = $1 
+                     AND cid = $2`, user.Uid, cid).Scan(&cname, &jstring)
+	if writeErr(err, w) {
+		ERROR.Println("Update Student - SELECT cid=", cid)
+		return
+	}
+
+	var students []map[string]string
+	err = json.Unmarshal([]byte(jstring), &students)
+	if writeErr(err, w) {
+		return
+	}
+
+	for i := 0; i < len(students); i++ {
+		if students[i]["sid"] == student.Sid {
+			if student.Email != "" {
+				students[i]["email"] = student.Email
+			}
+			if student.Fname != "" {
+				students[i]["fname"] = student.Fname
+			}
+			if student.Lname != "" {
+				students[i]["lname"] = student.Lname
+			}
+			break
+		}
+	}
+
+	js, err := json.Marshal(students)
+	if writeErr(err, w) {
+		return
+	}
+
+	_, err = db.Exec(`UPDATE classes 
+                    SET students=$1
+                    WHERE cid=$2`, string(js), cid)
+	if writeErr(err, w) {
+		ERROR.Println("Update Student - UPDATE cid=", cid)
+		return
+	}
+	TRACE.Println("Update Student - UPDATE cid=", cid)
+
+	writeSuccess(w)
+
 }
 
 func handleClassGet(w http.ResponseWriter, r *http.Request) {
@@ -532,10 +677,10 @@ func handleGetQuizGrades(w http.ResponseWriter, r *http.Request) {
 
 	// check if the quiz was taken
 	if len(quiz.Grades) == 0 {
-		writeSuccess(w, map[string]bool{"found":false})
+		writeSuccess(w, map[string]bool{"found": false})
 		return
 	}
-	//map student name with their grade	
+	//map student name with their grade
 	min := 100
 	max := 0
 	total := 0
@@ -543,7 +688,7 @@ func handleGetQuizGrades(w http.ResponseWriter, r *http.Request) {
 	var studentGrades = make(map[string]int)
 	for _, student := range students {
 		if grade, found := quiz.Grades[student["sid"]]; found {
-			studentGrades[student["fname"] + " " + student["lname"]] = grade
+			studentGrades[student["fname"]+" "+student["lname"]] = grade
 			if grade < min {
 				min = grade
 			}
@@ -553,14 +698,14 @@ func handleGetQuizGrades(w http.ResponseWriter, r *http.Request) {
 			total += grade
 			count += 1
 		} else {
-			studentGrades[student["fname"] + " " + student["lname"]] = -1
+			studentGrades[student["fname"]+" "+student["lname"]] = -1
 		}
 	}
 
 	var gradeReturn = make(map[string]interface{})
 	gradeReturn["max"] = max
 	gradeReturn["min"] = min
-	gradeReturn["avg"] = total/count
+	gradeReturn["avg"] = total / count
 	gradeReturn["studentGrades"] = studentGrades
 
 	writeSuccess(w, gradeReturn)
