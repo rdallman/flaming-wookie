@@ -190,9 +190,9 @@ func handleDeleteStudent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for i := 0; i < len(students); i++ {
+	for i := range students {
 		if students[i]["sid"] == student.Sid {
-			students = append(students[:1], students[i+1:]...)
+			students = append(students[:i], students[i+1:]...)
 			break
 		}
 	}
