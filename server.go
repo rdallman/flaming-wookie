@@ -62,7 +62,8 @@ func main() {
 	r.HandleFunc("/classes/{cid:[0-9]+}/quiz", handleQuizList).Methods("GET")
 	r.HandleFunc("/classes/{cid:[0-9]+}/quiz", handleQuizCreate).Methods("POST")
 	r.HandleFunc("/classes/{cid:[0-9]+}/student", handleAddStudent).Methods("POST")
-	//TODO /classes/{cid:[0-9]+}/students POST, DELETE (i.e. update student, delete student) //Do we want this? just update class?
+	r.HandleFunc("/classes/{cid:[0-9]+}/student", handleDeleteStudent).Methods("DELETE")
+	r.HandleFunc("/classes/{cid:[0-9]+}/student", handleUpdateStudent).Methods("PUT")
 
 	//API quiz methods (api.go)
 	r.HandleFunc("/quiz", handleQuizList).Methods("GET")
