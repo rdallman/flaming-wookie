@@ -45,7 +45,6 @@ func studServer(ws *websocket.Conn) {
 		return
 	}
 
-	// TODO don't do this
 	auth := ws.Request().Header["Authorization"]
 	if len(auth) < 1 {
 		return
