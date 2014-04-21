@@ -1,7 +1,7 @@
 // sets up the module for the entire app
 // TODO better/cleaner way of including modules?
 // TODO dependencies without including every file in html?
-var dashboardApp = angular.module('dashboardApp', ['ngRoute', 'customFilters', 'flash']);
+var dashboardApp = angular.module('dashboardApp', ['ngRoute', 'customFilters']);
 
 // routes handler for angular
 // TODO better way of setting up routes? also resource handling
@@ -55,7 +55,7 @@ dashboardApp.config(['$routeProvider',
 
 // clear cache
 // REMOVE WHEN IN PRODUCTION
-dashboardApp.run(function ($rootScope, $templateCache, flash) {
+dashboardApp.run(function ($rootScope, $templateCache) {
   $rootScope.$on('$viewContentLoaded', function() {
    $templateCache.removeAll();
  

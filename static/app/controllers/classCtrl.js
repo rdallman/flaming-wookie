@@ -2,7 +2,7 @@
 // class controller for
 //var classApp = angular.module('classControllers', ['ngRoute']);
 
-angular.module('dashboardApp').controller('ClassController', function (classService, quizService, $scope, $http, $route, $routeParams, $location, flash) {
+angular.module('dashboardApp').controller('ClassController', function (classService, quizService, $scope, $http, $route, $routeParams, $location) {
 
   $scope.classList = [];
   $scope.cid = -1;
@@ -66,8 +66,6 @@ angular.module('dashboardApp').controller('ClassController', function (classServ
       if ($scope.classform.$valid) {
         classService.createClass($scope.class);
         $location.path('/classes');
-    document.getElementById("flash").setAttribute("class", "alert alert-success"); 
-    flash("You created a class!");
       }
     }
   }
