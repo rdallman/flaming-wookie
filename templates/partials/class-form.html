@@ -35,8 +35,8 @@ input.ng-valid {
                     </form>
                     <div class="row">
                         <div class="col-md-10">
-                            <ul class="list-group">
-                              <li class="list-group-item" ng-repeat="student in class.students">{{ student.fname }} {{ student.lname }} - {{ student.email }}</li>
+                            <ul class="list-group" ng-repeat="student in class.students">
+                              <li class="list-group-item">{{ student.fname }} {{ student.lname }} - {{ student.email }}</li>
                             </ul>
                         </div>
                     </div>
@@ -45,5 +45,4 @@ input.ng-valid {
       </div>
     </div>
 </div>
-{{ class }}
 
