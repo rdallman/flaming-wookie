@@ -1,6 +1,6 @@
 // service for the quiz sessions, has a websocket connection to the server and provides functions for the
 // controllers to interface with the websocket
-angular.module('dashboardApp').factory('quizSessionService', function($http, $route, $routeParams) {
+angular.module('dashboardApp').factory('sessionService', function($http, $route, $routeParams) {
   var Service = {};
   var ws;
 
@@ -8,7 +8,7 @@ angular.module('dashboardApp').factory('quizSessionService', function($http, $ro
     ws = new WebSocket("ws://localhost:8080/giveme/" + qid);
     // set up handlers
     ws.onopen = function() {
-      console.log("Socket connection open for: " + qid);
+      console.log("Socket connection open for quiz/poll: " + qid);
     };
     ws.onclose = function() {
       console.log("Socket connection closed.");
@@ -25,6 +25,17 @@ angular.module('dashboardApp').factory('quizSessionService', function($http, $ro
     console.log("Sending end session signal...");
     ws.send(angular.toJson({state: -1}));
     ws.close();
+  }
+
+  Service.startAttendanceSesh = function(cid) {
+    ws = new WebSocket("ws://localhost:8080/takeAttendance/" + cid);
+
+    ws.onopen = function() {
+      console.log("Socket connection open for attendance: " + cid);
+    };
+    ws.onclose = function() {
+      console.log("Socket connection closed.");
+    };
   }
 
 

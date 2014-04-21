@@ -26,12 +26,12 @@ input.ng-valid {
 </style>
 <div class="row">
   <div class="col-md-10">
-    <div ng-controller="QuizController">
-      <h1>{{className}}: Create Quiz</h1>
+    <div ng-controller="PollController">
+      <h1>{{className}}: Create Poll</h1>
       <div class="row">
-        <form class="form-inline" role="form" name="quizform" novalidate>
+        <form class="form-inline" role="form" name="pollform" novalidate>
           <div class="form-title col-md-5 form-group">
-            <input type="text" ng-minlength=1 class="form-control" ng-model="quiz.title" placeholder="Title..." required>
+            <input type="text" ng-minlength=1 class="form-control" ng-model="poll.title" placeholder="Title..." required>
           </div>
         </form>
         <!--
@@ -59,7 +59,7 @@ input.ng-valid {
         </form>
       </div>
       <br />
-      <div class="row" ng-repeat="question in quiz.questions">
+      <div class="row" ng-repeat="question in poll.questions">
         <div class="col-md-5">
           <ul class="list-group">
             <li class="list-group-item">
@@ -68,7 +68,6 @@ input.ng-valid {
             <span style="margin-left:20px;">{{question.text}}</span>
             </li>
             <li class="list-group-item" ng-repeat="answer in question.answers">
-              <a ng-click="setCorrectAnswer(question, $index)" class="check" ng-class="{selected: $index==question.correct}"><i class="fa fa-check fa-lg"></i></a>&nbsp;
             {{answer}}
             <a class="delete pull-right" ng-click="removeAnswer(question, answer)"><i class="fa fa-trash-o fa-lg text-danger"></i></a>
             </li>
@@ -80,7 +79,7 @@ input.ng-valid {
           </ul>
         </div>
       </div>
-      <button class="btn btn-primary" ng:click="postQuiz()">Post Quiz!</button><br/>
+      <button class="btn btn-primary" ng:click="postPoll()">Post Poll!</button><br/>
     </div>
   </section>
 </div>

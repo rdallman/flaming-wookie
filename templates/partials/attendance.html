@@ -1,0 +1,21 @@
+<link href="/static/slides.css" rel="stylesheet" media="screen">
+<div id="slides" ng-controller="AttendanceController">
+	<div ng-class="{active: current==-1}" class="slide col-sm-offset-2">
+		<center><h1>Attendance</h1></center>
+		<br />
+		<center>Use your phone to say you're present.</center>
+    	<br/>
+		<center><button class="btn btn-primary btn-lg" ng-click="startAttendance()">Start Attendance</button></center>
+	</div>
+	
+		<div ng-class="{active: current==0}" class="slide col-sm-offset-2">
+			<h1>Are you here?</h1>
+      		<br />
+		
+			<center><button class="btn btn-primary btn-lg" 
+			 ng-click="endAttendance()">End Attendance</button></center>
+			
+		</div>
+		
+	
+</div>

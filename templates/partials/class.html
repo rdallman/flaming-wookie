@@ -2,7 +2,9 @@
 	<div class="row">
 		<div class="col-md-8">
 			<h1>{{ class.name }}</h1>
-			<a href="#/classes/{{ cid }}/edit" class="btn btn-large btn-primary pull-left">Edit Class</a>
+			<a href="#/classes/{{ cid }}/attendance" class="btn btn-large btn-primary pull-left">Take Attendance</a>
+			<a href="#/classes/{{ cid }}/view-attendance" class="btn btn-large btn-primary pull-left">View Attendance</a>
+			<a href="#/classes/{{ cid }}/edit" class="btn btn-large btn-default pull-left">Edit Class</a>
 			<a class="btn btn-danger pull-left" ng-click="deleteClass(cid, $index)"><i class="fa fa-trash-o fa-lg" href="#classes"></i> Delete Class</a>
 		</div>
 	</div>
@@ -27,6 +29,28 @@
 		</div>
 	</div>
 	<br />
+
+	<div class="row">
+		<div class="col-md-8">
+			<section class="widget">
+				<header>
+             	 	<h4 style="float:left;font-size:24px;">Polls</h4>
+               		<a style="float:right"href="#/classes/{{ cid }}/new-poll" class="btn btn-large btn-primary pull-right">Create Poll</a>
+				</header>
+				<div style="margin-top: 40px;" class="body">
+					<ul class="list-group">
+						<li class="list-group-item" ng-repeat="poll in pollList">
+							<a style="color:white;" href="#/poll/{{ poll.qid }}">{{ poll.title }}</a>
+              				<a class="btn btn-danger pull-right" ng-click="deletePoll(poll.qid, $index)"><i class="fa fa-trash-o fa-lg"></i> Delete Poll</a>
+              				<a class="btn btn-primary pull-right" href="#/classes/{{cid}}/poll/{{ poll.qid }}/results"><i class="fa fa-tasks"></i> View Poll Results</a>        		
+						</li>
+					</ul>
+				</div>
+			</section>
+		</div>
+	</div>
+	<br />
+
 	<div ng-repeat="s in class.students" >
   		<span>{{ s.fname }} {{ s.lname }} - {{s.email}}</span>
  	 </div>
