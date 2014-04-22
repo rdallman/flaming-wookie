@@ -5,7 +5,7 @@ angular.module('dashboardApp').factory('sessionService', function($http, $route,
   var ws;
 
   Service.startSession = function(qid) {
-    ws = new WebSocket("ws://localhost:8080/giveme/" + qid);
+    ws = new WebSocket("ws://24.178.89.28:8080/giveme/" + qid);
     // set up handlers
     ws.onopen = function() {
       console.log("Socket connection open for quiz/poll: " + qid);
@@ -28,7 +28,7 @@ angular.module('dashboardApp').factory('sessionService', function($http, $route,
   }
 
   Service.startAttendanceSesh = function(cid) {
-    ws = new WebSocket("ws://localhost:8080/takeAttendance/" + cid);
+    ws = new WebSocket("ws://24.178.89.28:8080/takeAttendance/" + cid);
 
     ws.onopen = function() {
       console.log("Socket connection open for attendance: " + cid);
