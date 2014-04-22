@@ -1,0 +1,333 @@
+--
+-- PostgreSQL database dump
+--
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+
+--
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+SET search_path = public, pg_catalog;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: attendance; Type: TABLE; Schema: public; Owner: wookie; Tablespace: 
+--
+
+CREATE TABLE attendance (
+    cid integer,
+    students json,
+    date_created date
+);
+
+
+ALTER TABLE public.attendance OWNER TO wookie;
+
+--
+-- Name: classes; Type: TABLE; Schema: public; Owner: wookie; Tablespace: 
+--
+
+CREATE TABLE classes (
+    cid integer NOT NULL,
+    name text,
+    uid integer,
+    students json,
+    semester text
+);
+
+
+ALTER TABLE public.classes OWNER TO wookie;
+
+--
+-- Name: classes_cid_seq; Type: SEQUENCE; Schema: public; Owner: wookie
+--
+
+CREATE SEQUENCE classes_cid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.classes_cid_seq OWNER TO wookie;
+
+--
+-- Name: classes_cid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wookie
+--
+
+ALTER SEQUENCE classes_cid_seq OWNED BY classes.cid;
+
+
+--
+-- Name: quiz; Type: TABLE; Schema: public; Owner: wookie; Tablespace: 
+--
+
+CREATE TABLE quiz (
+    qid integer NOT NULL,
+    info json,
+    cid integer,
+    type integer
+);
+
+
+ALTER TABLE public.quiz OWNER TO wookie;
+
+--
+-- Name: quiz_qid_seq; Type: SEQUENCE; Schema: public; Owner: wookie
+--
+
+CREATE SEQUENCE quiz_qid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.quiz_qid_seq OWNER TO wookie;
+
+--
+-- Name: quiz_qid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wookie
+--
+
+ALTER SEQUENCE quiz_qid_seq OWNED BY quiz.qid;
+
+
+--
+-- Name: session_dump; Type: TABLE; Schema: public; Owner: wookie; Tablespace: 
+--
+
+CREATE TABLE session_dump (
+    qid integer,
+    by_question json,
+    by_student json,
+    date_created date
+);
+
+
+ALTER TABLE public.session_dump OWNER TO wookie;
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: wookie; Tablespace: 
+--
+
+CREATE TABLE users (
+    uid integer NOT NULL,
+    email text,
+    password bytea,
+    salt bytea
+);
+
+
+ALTER TABLE public.users OWNER TO wookie;
+
+--
+-- Name: users_uid_seq; Type: SEQUENCE; Schema: public; Owner: wookie
+--
+
+CREATE SEQUENCE users_uid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.users_uid_seq OWNER TO wookie;
+
+--
+-- Name: users_uid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: wookie
+--
+
+ALTER SEQUENCE users_uid_seq OWNED BY users.uid;
+
+
+--
+-- Name: cid; Type: DEFAULT; Schema: public; Owner: wookie
+--
+
+ALTER TABLE ONLY classes ALTER COLUMN cid SET DEFAULT nextval('classes_cid_seq'::regclass);
+
+
+--
+-- Name: qid; Type: DEFAULT; Schema: public; Owner: wookie
+--
+
+ALTER TABLE ONLY quiz ALTER COLUMN qid SET DEFAULT nextval('quiz_qid_seq'::regclass);
+
+
+--
+-- Name: uid; Type: DEFAULT; Schema: public; Owner: wookie
+--
+
+ALTER TABLE ONLY users ALTER COLUMN uid SET DEFAULT nextval('users_uid_seq'::regclass);
+
+
+--
+-- Data for Name: attendance; Type: TABLE DATA; Schema: public; Owner: wookie
+--
+
+COPY attendance (cid, students, date_created) FROM stdin;
+540	[{"-81ev_68Mhveyttv":0}]	2014-04-20
+\.
+
+
+--
+-- Data for Name: classes; Type: TABLE DATA; Schema: public; Owner: wookie
+--
+
+COPY classes (cid, name, uid, students, semester) FROM stdin;
+540	Test	2	[{"email":"rdallman10@gmail.com","fname":"Reed","lname":"Allman","sid":"TDoMur+FClPa2Wmu"},{"email":"rdallman10@gmail.com","fname":"Red","lname":"Alman","sid":"-81ev_68Mhveyttv"}]	\N
+542	Classy Class	2	[{"email":"rememberthisone334@gmail.com","fname":"Fred","lname":"Fishfryer","sid":"uJ3WT1aZoIHK6TEw"}]	\N
+543	new class	2	[{"email":"rdallman10@gmail.com","fname":"reed","lname":"allman","sid":"btdeto17e40PDYoV"}]	\N
+158	TEST(do not delete)	2	[{"email":"rdallman10@gmail.com","fname":"Reed","lname":"Allman","sid":"a+kh9ZZzXldVc5tD"},{"email":"rehorn09@gmail.com","fname":"Robert","lname":"Horn","sid":"fTyYTgOzP9UnuRGh"},{"email":"emailUpdate@email.com","fname":"FnameUpdate","lname":"lname","sid":"UZ6A5JyZBpMWmk9+"},{"email":"","fname":"","lname":"","sid":"GNjCZKCEdz/Zx9FQ"},{"email":"reh0009@auburn.edu","fname":"Robert","lname":"HORN2","sid":"QsuTAYyP0SGW9e1q"},{"email":"reh0009@auburn.edu","fname":"test","lname":"guy","sid":"2HvHaD/tXuQqGiXR"},{"email":"mjs0026@auburn.edu","fname":"Maghen","lname":"Smith","sid":"lLQf+1f2Vj8uqfyY"},{"email":"rememberthisone334@gmail.com","fname":"Bob","lname":"Saget","sid":"sC4NACyR3GV/vIew"}]	\N
+\.
+
+
+--
+-- Name: classes_cid_seq; Type: SEQUENCE SET; Schema: public; Owner: wookie
+--
+
+SELECT pg_catalog.setval('classes_cid_seq', 544, true);
+
+
+--
+-- Data for Name: quiz; Type: TABLE DATA; Schema: public; Owner: wookie
+--
+
+COPY quiz (qid, info, cid, type) FROM stdin;
+313	{"title":"Test","questions":[{"text":"Works?","answers":["Yes","no"],"correct":0}],"grades":{}}	158	1
+310	{"title":"hi","questions":[{"text":"hello","answers":["yo"],"correct":0}],"grades":{}}	158	\N
+245	{"title":"The Best Quiz","questions":[{"text":"RU486?","answers":["hell yeah","hell no"],"correct":-1}],"grades":{}}	158	\N
+246	{"title":"QQuiz","questions":[{"text":"RU486","answers":["hell yeah","hell no"],"correct":-1},{"text":"FROG?","answers":["yepper","noper"],"correct":-1}],"grades":{}}	158	\N
+222	{"title":"My Quiz","questions":[{"text":"What's the best programming language?","answers":["Go","Javascript","Java","Python"],"correct":0},{"text":"What's sleep?","answers":["I wouldn't know...","The greatest thing ever"],"correct":0}],"grades":{}}	158	1
+317	{"title":"q","questions":[],"grades":{}}	540	\N
+318	{"title":"Quiz123","questions":[{"text":"Hello","answers":["Hello there!","Howdy!"],"correct":-1}],"grades":{}}	542	\N
+249	{"title":"hay","questions":[{"text":"sup","answers":["die"],"correct":0}],"grades":{}}	158	\N
+319	{"title":"long one","questions":[{"text":"so","answers":["question"],"correct":0},{"text":"much","answers":["answer"],"correct":0}],"grades":{"-81ev_68Mhveyttv":100}}	540	\N
+316	{"title":"The poll","questions":[{"text":"Fav food?","answers":["pie","cake","ice cream"],"correct":0}],"grades":{"filler":0}}	540	2
+\.
+
+
+--
+-- Name: quiz_qid_seq; Type: SEQUENCE SET; Schema: public; Owner: wookie
+--
+
+SELECT pg_catalog.setval('quiz_qid_seq', 319, true);
+
+
+--
+-- Data for Name: session_dump; Type: TABLE DATA; Schema: public; Owner: wookie
+--
+
+COPY session_dump (qid, by_question, by_student, date_created) FROM stdin;
+314	[{"-81ev_68Mhveyttv":1}]	{"-81ev_68Mhveyttv":[1]}	2014-04-20
+316	[{"-81ev_68Mhveyttv":0}]	{"-81ev_68Mhveyttv":[0]}	2014-04-20
+316	[{}]	{}	2014-04-21
+\.
+
+
+--
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: wookie
+--
+
+COPY users (uid, email, password, salt) FROM stdin;
+1	mjs0026@auburn.edu	\\xcb091dfd7adaeab8e43f44dc0a4e47a9f9889d905634d301ccea7b22339e1716	\\xa9c6923ff3f3f59a94f11b8f98fd5454cc4c251aa3e880b2ba0a244c55771a33
+2	wookie@wookie.com	\\x5f4fd95d5b78a30cfd33ab56bcddafbfcd1f66747e8a6effb7de1e85b0718b8f	\\x312556cbc92bdb84aae29393f41d26cf0fc6b514ca51b2e21e632fe96a8f5e74
+19	reed@poop.com	\\x7cd0c0c7b8df92513e3056fb353660ab7c646dc84a41b9916a91a975d5d21e5b	\\xebc10fc67e5dc72f88749579866a4d7c3e3e706c86317681ef0e3b2b0eee5ad0
+20	me@example.com	\\x3f121636124edfb94282f1e8c355e4b380ba450523dd55ee8aed4d12d98fcfe9	\\x99cb8e8203b7d72d9cfc88a86c2fc14d355b2730b014fca1068cc8c2626e27a7
+21	rehorn09@gmail.com	\\xa126d2b3470711985ad40a764263fe616f998fb228a154aaf32647548cc8020d	\\xf4d3fd45f1b4752ab21e1cc0307163967490aa270f2d93447fd459baae5c3ebb
+22	me1@example.com	\\xc9e3cd298c28e18187a1a25c79529a5746324015c5fdfed25ce35c1246206f27	\\x093e1ab46628654d6febc276768adbf245c2a172df73b8dc4478de39b4c4e9c2
+23	mjs0026@gmail.com	\\x212d6094202a24aee0ceb469eb0f17a71a303e1e82860405e259e481ddaf0cbf	\\xd0e7da72f375f067b454699f68e3d8bf282b6e834f9ca6e0b7c3c6c0cd17130f
+\.
+
+
+--
+-- Name: users_uid_seq; Type: SEQUENCE SET; Schema: public; Owner: wookie
+--
+
+SELECT pg_catalog.setval('users_uid_seq', 27, true);
+
+
+--
+-- Name: classes_pkey; Type: CONSTRAINT; Schema: public; Owner: wookie; Tablespace: 
+--
+
+ALTER TABLE ONLY classes
+    ADD CONSTRAINT classes_pkey PRIMARY KEY (cid);
+
+
+--
+-- Name: quiz_pkey; Type: CONSTRAINT; Schema: public; Owner: wookie; Tablespace: 
+--
+
+ALTER TABLE ONLY quiz
+    ADD CONSTRAINT quiz_pkey PRIMARY KEY (qid);
+
+
+--
+-- Name: users_email_key; Type: CONSTRAINT; Schema: public; Owner: wookie; Tablespace: 
+--
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT users_email_key UNIQUE (email);
+
+
+--
+-- Name: users_pkey; Type: CONSTRAINT; Schema: public; Owner: wookie; Tablespace: 
+--
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (uid);
+
+
+--
+-- Name: classes_uid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: wookie
+--
+
+ALTER TABLE ONLY classes
+    ADD CONSTRAINT classes_uid_fkey FOREIGN KEY (uid) REFERENCES users(uid);
+
+
+--
+-- Name: quiz_cid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: wookie
+--
+
+ALTER TABLE ONLY quiz
+    ADD CONSTRAINT quiz_cid_fkey FOREIGN KEY (cid) REFERENCES classes(cid);
+
+
+--
+-- Name: public; Type: ACL; Schema: -; Owner: postgres
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM postgres;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
